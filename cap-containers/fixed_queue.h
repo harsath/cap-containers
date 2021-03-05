@@ -42,11 +42,10 @@ static inline size_t cap_fixed_queue_get_size(const cap_fixed_queue*);
 static inline size_t cap_fixed_queue_get_remaining_space(const cap_fixed_queue*);
 static inline void cap_fixed_queue_push(cap_fixed_queue*, void*);
 static inline void* cap_fixed_queue_pop(cap_fixed_queue*);
-static inline void* cap_fixed_queue_front(const cap_fixed_queue*);
-static inline void* cap_fixed_queue_back(const cap_fixed_queue*);
+static inline void* cap_fixed_queue_front(cap_fixed_queue*);
+static inline void* cap_fixed_queue_back(cap_fixed_queue*);
 static inline void cap_fixed_queue_swap(cap_fixed_queue* fixed_queue_one, cap_fixed_queue* fixed_queue_two);
 // Prototypes (Internal helpers)
-static inline void* _cap_fixed_queue_get_data_offset(cap_fixed_queue* fixed_queue, size_t index);
 static inline void _cap_fixed_queue_assign(cap_fixed_queue* fixed_queue, size_t index, void* element);
 
 static inline cap_fixed_queue* cap_fixed_queue_init(size_t initial_size){
@@ -88,7 +87,7 @@ static inline void cap_fixed_queue_push(cap_fixed_queue* fixed_queue, void* data
 
 __attribute__((always_inline))
 static inline void* cap_fixed_queue_pop(cap_fixed_queue* fixed_queue){
-	void* returner = _cap_fixed_queue_get_data_offset(fixed_queue, fixed_queue->_current_size);	
+	unsigned char* returner = *(fixed_queue->_internal_buffer + fixed_queue->_current_size);
 	fixed_queue->_current_size--;
 	return returner;
 }
@@ -100,7 +99,7 @@ static inline void* cap_fixed_queue_front(cap_fixed_queue* fixed_queue){
 
 __attribute__((always_inline))
 static inline void* cap_fixed_queue_back(cap_fixed_queue* fixed_queue){
-	return fixed_queue->_internal_buffer[fixed_queue->_current_size];
+	return (void*)*(fixed_queue->_internal_buffer + (fixed_queue->_current_size-1));
 }
 
 __attribute__((always_inline))
@@ -117,15 +116,9 @@ static inline void cap_fixed_queue_swap(cap_fixed_queue* fixed_queue_one, cap_fi
 }
 
 __attribute__((always_inline))
-static inline void* _cap_fixed_queue_get_data_offset(cap_fixed_queue* fixed_queue, size_t index){
-	assert(fixed_queue->_memory_capacity > index);	
-	return fixed_queue->_internal_buffer + (index);
-}
-
-__attribute__((always_inline))
 static inline void _cap_fixed_queue_assign(cap_fixed_queue* fixed_queue, size_t index, void* element){
-	void* start_offset = _cap_fixed_queue_get_data_offset(fixed_queue, fixed_queue->_current_size);
-	start_offset = element;
+	assert(index < fixed_queue->_memory_capacity);
+	*(fixed_queue->_internal_buffer + index) = (unsigned char*)element;
 }
 
 #endif // !CAP_FIXED_QUEUE_H
