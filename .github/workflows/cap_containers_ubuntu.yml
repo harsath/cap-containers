@@ -24,8 +24,8 @@ jobs:
                                 echo github.event_name: ${{ github.event_name }}
                         - name: Installing dependencies for Ubuntu Linux
                           run: |
-                                perl ./ci/install_dependency.pl
-                        - name: Configuring and Build
+                                perl ./ci/install_dependency_ubuntu.pl
+                        - name: Configuring and Build on Ubuntu Linux
                           shell: bash
                           run: |
                                 perl ./ci/build_run_tests.pl _build
