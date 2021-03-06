@@ -1,3 +1,4 @@
-compile_commands.json
+/compile_commands.json
 .clangd
 build
+build/compile_commands.json
