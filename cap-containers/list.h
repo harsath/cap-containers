@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 #include <string.h>
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE*
@@ -74,6 +75,7 @@ static inline cap_list* cap_list_init(){
 }
 
 static inline bool cap_list_push_front(cap_list* d_list, void* data){
+	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
 	if(new_node == NULL) return false;
 	new_node->data = (CAP_GENERIC_TYPE_PTR) data;
@@ -86,6 +88,7 @@ static inline bool cap_list_push_front(cap_list* d_list, void* data){
 }
 
 static inline bool cap_list_push_back(cap_list* d_list, void* data){
+	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
 	if(new_node == NULL) return false;
 	new_node->data = (CAP_GENERIC_TYPE_PTR) data;
@@ -100,6 +103,7 @@ static inline bool cap_list_push_back(cap_list* d_list, void* data){
 
 __attribute__((always_inline))
 static inline void* cap_list_pop_front(cap_list* d_list){
+	assert(d_list != NULL);
 	_cap_list_node* pop_node = d_list->_head_node->next;
 	d_list->_head_node->next = pop_node->next;
 	pop_node->next->previous = d_list->_head_node;
@@ -108,6 +112,7 @@ static inline void* cap_list_pop_front(cap_list* d_list){
 
 __attribute__((always_inline))
 static inline void* cap_list_pop_back(cap_list* d_list){
+	assert(d_list != NULL);
 	_cap_list_node* pop_node = d_list->_tail_node->previous;
 	d_list->_tail_node->previous = pop_node->previous;
 	pop_node->previous->next = d_list->_tail_node;
@@ -116,11 +121,13 @@ static inline void* cap_list_pop_back(cap_list* d_list){
 
 __attribute__((always_inline))
 static inline void* cap_list_front(const cap_list* d_list){
+	assert(d_list != NULL);
 	return d_list->_head_node->next->data;
 }
 
 __attribute__((always_inline))
 static inline void* cap_list_back(const cap_list* d_list){
+	assert(d_list != NULL);
 	return d_list->_tail_node->previous->data;
 }
 
@@ -128,6 +135,7 @@ static inline void* cap_list_back(const cap_list* d_list){
 // Returns NULL if not found
 __attribute__((always_inline))
 static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn)(void*)){
+	assert((d_list != NULL) && (predicate_fn != NULL));
 	_cap_list_node* iter_node = d_list->_head_node->next;
 	do {
 		if(iter_node->data != NULL){
@@ -142,6 +150,7 @@ static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn
 // Removes the first occurance of predicate's 'true'
 __attribute__((always_inline))
 static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(void*)){
+	assert((d_list != NULL) && (predicate_fn != NULL));
 	_cap_list_node* iter_node = d_list->_head_node->next;
 	do {
 		if(iter_node->data != NULL){
@@ -159,6 +168,7 @@ static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(voi
 
 __attribute__((always_inline))
 static inline bool cap_list_insert_after(cap_list* d_list, void* insert_after_this_node, void* data){
+	assert((d_list != NULL) && (insert_after_this_node != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);	
 	if(new_node == NULL) return false;
 	new_node->data = (CAP_GENERIC_TYPE_PTR) data;
@@ -171,6 +181,7 @@ static inline bool cap_list_insert_after(cap_list* d_list, void* insert_after_th
 
 __attribute__((always_inline))
 static inline void cap_list_free(cap_list* d_list){
+	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
 	do {
@@ -184,6 +195,7 @@ static inline void cap_list_free(cap_list* d_list){
 
 __attribute__((always_inline))
 static inline void cap_list_deep_free(cap_list* d_list){
+	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
 	do {
