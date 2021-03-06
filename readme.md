@@ -1,4 +1,5 @@
 ## "Copy-And-Paste" ready pure C containers
+![macOS Actions Status](https://github.com/harsath/cap-containers/workflows/macOS/badge.svg) ![Linux Actions Status](https://github.com/harsath/cap-containers/workflows/Linux/badge.svg)
 
 This project is under `very active development`.
 Reimplementing containers everytime in C is a pain, I was frustrated myself trying to reimplement the same containers over and over in C, so I am writing this pure C ***Copy and Paste*** ready containers.
