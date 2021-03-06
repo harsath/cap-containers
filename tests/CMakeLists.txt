@@ -8,7 +8,8 @@ include_directories(../cap-containers)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(
 	SOURCE_FILES
-	test-fixed-queue.cpp
+	#test-fixed-queue.cpp
+	test-list.cpp
 )
 add_subdirectory(vendor/googletest)
 add_executable(

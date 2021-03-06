@@ -39,8 +39,12 @@ typedef struct _cap_list_node {
 typedef struct cap_list {
 	_cap_list_node* _head_node;
 	_cap_list_node* _tail_node;
-	size_t _size_of_list;
 } cap_list;
+
+typedef struct {
+	CAP_GENERIC_TYPE_PTR data;
+	_cap_list_node* current_node;
+} cap_list_iterator;
 
 // Prototypes (Public APIs)
 static inline cap_list* cap_list_init();
@@ -52,7 +56,7 @@ static inline void* cap_list_pop_back(cap_list*);
 static inline void* cap_list_front(const cap_list*);
 static inline void* cap_list_back(const cap_list*);
 static inline bool cap_list_remove_if(cap_list*, bool (*)(void*));
-static inline bool cap_list_insert_after(cap_list*, void* node, void* data);
+static inline void cap_list_deep_free(cap_list*);
 static inline void cap_list_free(cap_list*);
 
 static inline cap_list* cap_list_init(){
@@ -126,8 +130,10 @@ __attribute__((always_inline))
 static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn)(void*)){
 	_cap_list_node* iter_node = d_list->_head_node->next;
 	do {
-		if(predicate_fn(iter_node->data))
-		{ return iter_node->data; }
+		if(iter_node->data != NULL){
+			if(predicate_fn(iter_node->data))
+			{ return iter_node->data; }
+		}else{ return NULL; }
 		iter_node = iter_node->next;
 	} while(iter_node != NULL);
 	return NULL;
@@ -136,15 +142,17 @@ static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn
 // Removes the first occurance of predicate's 'true'
 __attribute__((always_inline))
 static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(void*)){
-	_cap_list_node* iter_node = d_list->_head_node;
+	_cap_list_node* iter_node = d_list->_head_node->next;
 	do {
-		if(predicate_fn(iter_node->data)){
-			iter_node->previous->next = iter_node->next;
-			iter_node->next->previous = iter_node->previous;
-			if(iter_node->data != NULL) free(iter_node->data);
-			if(iter_node != NULL) free(iter_node);
-			return true;
-		}
+		if(iter_node->data != NULL){
+			if(predicate_fn(iter_node->data)){
+				iter_node->previous->next = iter_node->next;
+				iter_node->next->previous = iter_node->previous;
+				if(iter_node != NULL) free(iter_node);
+				return true;
+			}
+		}else{ return false; }
+		iter_node = iter_node->next;
 	} while(iter_node != NULL);
 	return false;
 }
@@ -163,14 +171,28 @@ static inline bool cap_list_insert_after(cap_list* d_list, void* insert_after_th
 
 __attribute__((always_inline))
 static inline void cap_list_free(cap_list* d_list){
-	_cap_list_node* current_node = d_list->_head_node;	
+	_cap_list_node* current_node = d_list->_head_node->next;
+	_cap_list_node* next_node;
+	do {
+		next_node = current_node->next;
+		current_node->data = NULL;
+		if(current_node != NULL) free(current_node);
+		current_node = next_node;
+	} while((current_node != NULL) && (current_node != d_list->_tail_node));
+	free(d_list->_head_node);
+}
+
+__attribute__((always_inline))
+static inline void cap_list_deep_free(cap_list* d_list){
+	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
 	do {
 		next_node = current_node->next;
 		if(current_node->data != NULL) free(current_node->data);
 		if(current_node != NULL) free(current_node);
 		current_node = next_node;
-	} while(current_node != NULL);
+	} while((current_node != NULL) && (current_node != d_list->_tail_node));
+	free(d_list->_head_node);
 }
 
 #endif // !CAP_LIST_H
