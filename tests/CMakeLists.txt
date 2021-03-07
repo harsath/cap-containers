@@ -12,6 +12,7 @@ set(
 	SOURCE_FILES
 	test-fixed-queue.cpp
 	test-list.cpp
+	test-dynamic-queue.cpp
 )
 add_subdirectory(vendor/googletest)
 add_executable(
