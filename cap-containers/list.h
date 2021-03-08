@@ -158,7 +158,6 @@ static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(voi
 				iter_node->previous->next = iter_node->next;
 				iter_node->next->previous = iter_node->previous;
 				if(iter_node != NULL) free(iter_node);
-				return true;
 			}
 		}else{ return false; }
 		iter_node = iter_node->next;
