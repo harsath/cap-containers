@@ -53,9 +53,9 @@ typedef struct {
 static inline cap_fixed_queue* cap_fixed_queue_init(size_t, size_t);
 static inline void cap_fixed_queue_free(cap_fixed_queue*);
 static inline void cap_fixed_queue_deep_free(cap_fixed_queue*);
-static inline size_t cap_fixed_queue_get_capacity(const cap_fixed_queue*);
-static inline size_t cap_fixed_queue_get_size(const cap_fixed_queue*);
-static inline size_t cap_fixed_queue_get_remaining_space(const cap_fixed_queue*);
+static inline size_t cap_fixed_queue_capacity(const cap_fixed_queue*);
+static inline size_t cap_fixed_queue_size(const cap_fixed_queue*);
+static inline size_t cap_fixed_queue_remaining_space(const cap_fixed_queue*);
 static inline bool cap_fixed_queue_push(cap_fixed_queue*, void*);
 static inline void* cap_fixed_queue_pop(cap_fixed_queue*);
 static inline void* cap_fixed_queue_front(cap_fixed_queue*);
@@ -95,19 +95,19 @@ static inline void cap_fixed_queue_deep_free(cap_fixed_queue* fixed_queue){
 }
 
 __attribute__((always_inline))
-static inline size_t cap_fixed_queue_get_capacity(const cap_fixed_queue* fixed_queue){
+static inline size_t cap_fixed_queue_capacity(const cap_fixed_queue* fixed_queue){
 	assert(fixed_queue != NULL);
 	return fixed_queue->_capacity;
 }
 
 __attribute__((always_inline))
-static inline size_t cap_fixed_queue_get_size(const cap_fixed_queue* fixed_queue){
+static inline size_t cap_fixed_queue_size(const cap_fixed_queue* fixed_queue){
 	assert(fixed_queue != NULL);
 	return fixed_queue->_current_size;
 }
 
 __attribute__((always_inline))
-static inline size_t cap_fixed_queue_get_remaining_space(const cap_fixed_queue* fixed_queue){
+static inline size_t cap_fixed_queue_remaining_space(const cap_fixed_queue* fixed_queue){
 	assert(fixed_queue != NULL);
 	return (fixed_queue->_capacity - fixed_queue->_current_size);
 }

@@ -52,7 +52,7 @@ typedef struct {
 static inline cap_dynamic_queue* cap_dynamic_queue_init();
 static inline void cap_dynamic_queue_free(cap_dynamic_queue*);
 static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
-static inline size_t cap_dynamic_queue_get_size(const cap_dynamic_queue*);
+static inline size_t cap_dynamic_queue_size(const cap_dynamic_queue*);
 static inline bool cap_dynamic_queue_push(cap_dynamic_queue*, void*);
 static inline void* cap_dynamic_queue_pop(cap_dynamic_queue*);
 static inline void* cap_dynamic_queue_front(cap_dynamic_queue*);
@@ -90,7 +90,7 @@ static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue* dynamic_queue)
 }
 
 __attribute__((always_inline))
-static inline size_t cap_dynamic_queue_get_size(const cap_dynamic_queue* dynamic_queue){
+static inline size_t cap_dynamic_queue_size(const cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	return dynamic_queue->_current_size;
 }
