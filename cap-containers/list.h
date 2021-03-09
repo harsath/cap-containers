@@ -32,12 +32,12 @@
 
 typedef struct _cap_list_node {
 	CAP_GENERIC_TYPE_PTR data;
-	_cap_list_node* next;	
-	_cap_list_node* previous;
+	struct _cap_list_node* next;	
+	struct _cap_list_node* previous;
 } _cap_list_node;
 
 // Head and tail are sentinel nodes. It is design decision.
-typedef struct cap_list {
+typedef struct {
 	_cap_list_node* _head_node;
 	_cap_list_node* _tail_node;
 } cap_list;
@@ -152,17 +152,19 @@ __attribute__((always_inline))
 static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(void*)){
 	assert((d_list != NULL) && (predicate_fn != NULL));
 	_cap_list_node* iter_node = d_list->_head_node->next;
+	size_t num_removed = 0;
 	do {
 		if(iter_node->data != NULL){
 			if(predicate_fn(iter_node->data)){
 				iter_node->previous->next = iter_node->next;
 				iter_node->next->previous = iter_node->previous;
 				if(iter_node != NULL) free(iter_node);
+				num_removed++;
 			}
-		}else{ return false; }
+		}
 		iter_node = iter_node->next;
-	} while(iter_node != NULL);
-	return false;
+	} while(iter_node != NULL && iter_node->next != NULL);
+	return (num_removed != 0);
 }
 
 __attribute__((always_inline))

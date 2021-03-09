@@ -1,25 +1,19 @@
 cmake_minimum_required(VERSION 3.10)
 project(
 	cap_containers_test
-	LANGUAGES C CXX
+	LANGUAGES C
 	DESCRIPTION "Pure C Containers test"
 )
 include_directories(../cap-containers)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(
 	SOURCE_FILES
-	test-fixed-queue.cpp
-	test-list.cpp
-	test-dynamic-queue.cpp
+	test-main.c
+	test-fixed-queue.c
+	test-list.c
+	test-dynamic-queue.c
 )
-add_subdirectory(vendor/googletest)
 add_executable(
 	${PROJECT_NAME}
 	${SOURCE_FILES}
-)
-target_link_libraries(
-	${PROJECT_NAME}
-	gtest_main
 )

@@ -22,6 +22,7 @@
 #ifndef CAP_FIXED_QUEUE_H
 #define CAP_FIXED_QUEUE_H
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
@@ -33,12 +34,12 @@
 // Abstract types
 typedef struct _cap_list_node {
 	CAP_GENERIC_TYPE_PTR data;
-	_cap_list_node* next;
-	_cap_list_node* previous;
+	struct _cap_list_node* next;
+	struct _cap_list_node* previous;
 } _cap_list_node;
 
 // Head and tail are sentinel nodes. It is design decision.
-typedef struct _cap_list {
+typedef struct {
 	_cap_list_node* _head_node;
 	_cap_list_node* _tail_node;
 } _cap_list;
@@ -50,7 +51,7 @@ typedef struct {
 } cap_fixed_queue;
 
 // Prototypes (Public APIs)
-static inline cap_fixed_queue* cap_fixed_queue_init(size_t, size_t);
+static inline cap_fixed_queue* cap_fixed_queue_init(size_t);
 static inline void cap_fixed_queue_free(cap_fixed_queue*);
 static inline void cap_fixed_queue_deep_free(cap_fixed_queue*);
 static inline size_t cap_fixed_queue_capacity(const cap_fixed_queue*);
