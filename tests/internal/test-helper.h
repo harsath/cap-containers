@@ -27,6 +27,22 @@ static size_t _pass_count = 0;
 	}											\
 	} while(0);
 
+#define CAP_ASSERT_FALSE(expression_result, test_name)						\
+	do {											\
+	if(!expression_result){									\
+		_pass_count++;									\
+		_total_test_count++;								\
+		printf("TEST: %s, STATUS: %s[ OK ]%s, LINE: %d, FILE: %s\n", test_name, 	\
+				GREEN_COLOR, RESET_COLOR, __LINE__, __FILENAME__);		\
+	}else{											\
+		_fail_count++;									\
+		_total_test_count++;								\
+		printf("TEST: %s, STATUS: %s[ FAILED ]%s, LINE: %d, FILE: %s\n", test_name, 	\
+				RED_COLOR, RESET_COLOR, __LINE__, __FILENAME__);		\
+		exit(EXIT_FAILURE);								\
+	}											\
+	} while(0);
+
 #define CAP_ASSERT_EQ(value_one, value_two, test_name)						\
 	do {											\
 	if(value_one == value_two){								\

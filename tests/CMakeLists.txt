@@ -12,6 +12,7 @@ set(
 	test-fixed-queue.c
 	test-list.c
 	test-dynamic-queue.c
+	test-vector.c
 )
 add_executable(
 	${PROJECT_NAME}
