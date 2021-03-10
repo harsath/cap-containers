@@ -45,7 +45,7 @@ typedef struct {
 } cap_vector_iterator;
 
 // Prototypes (Public APIs)
-// Initilize:
+// Init:
 static inline cap_vector* cap_vector_init(size_t);
 static inline cap_vector_iterator* cap_vector_iterator_init(cap_vector*);
 
@@ -88,6 +88,7 @@ static inline bool cap_vector_iterator_equals_predicate(cap_vector_iterator*, bo
 static inline size_t cap_vector_iterator_index(cap_vector_iterator*);
 static inline cap_vector_iterator* cap_vector_begin(cap_vector*);
 static inline cap_vector_iterator* cap_vector_end(cap_vector*);
+static inline void cap_vector_iterator_free(cap_vector_iterator*);
 
 // Prototypes (Internal helpers)
 static inline bool _cap_vector_reserve(cap_vector*, size_t);
@@ -307,9 +308,11 @@ static inline void* cap_vector_at(cap_vector* vector, size_t index){
 	return vector->_size < index ? NULL : &vector->_internal_buffer[index];
 }
 
+__attribute__((always_inline))
 static inline void cap_vector_iterator_insert(cap_vector_iterator* iterator, void* data){
 	assert(iterator != NULL && data != NULL);
 	iterator->_internal_pointer->_internal_buffer[iterator->_current_index] = (CAP_GENERIC_TYPE_PTR)data;
+	iterator->data = data;
 }
 
 static inline void cap_vector_iterator_remove(cap_vector_iterator* iterator){
@@ -317,42 +320,49 @@ static inline void cap_vector_iterator_remove(cap_vector_iterator* iterator){
 	memmove(&iterator->_internal_pointer->_internal_buffer[iterator->_current_index],
 		&iterator->_internal_pointer->_internal_buffer[iterator->_current_index+1],
 		sizeof(CAP_GENERIC_TYPE_PTR) * (iterator->_internal_pointer->_capacity - iterator->_current_index));
+	iterator->data = iterator->_internal_pointer->_internal_buffer[iterator->_current_index];
 }
 
+__attribute__((always_inline))
 static inline void cap_vector_iterator_increment(cap_vector_iterator* iterator){
 	assert(iterator != NULL);
-	iterator->_current_index++;
 	if(iterator->_internal_pointer->_size < iterator->_current_index){
 		iterator->data = NULL;
 		return;
 	}
+	if(iterator->data != NULL) iterator->_current_index++;
 	iterator->data = iterator->_internal_pointer->_internal_buffer[iterator->_current_index];
 }
 
+__attribute__((always_inline))
 static inline void* cap_vector_iterator_next(cap_vector_iterator* iterator){
 	assert(iterator != NULL);
 	if(iterator->_internal_pointer->_size < (iterator->_current_index+1)) return NULL;
 	return iterator->_internal_pointer->_internal_buffer[(iterator->_current_index+1)];
 }
 
+__attribute__((always_inline))
 static inline void* cap_vector_iterator_previous(cap_vector_iterator* iterator){
 	assert(iterator != NULL);
 	if((iterator->_current_index-1) < 0) return NULL;
 	return iterator->_internal_pointer->_internal_buffer[(iterator->_current_index-1)];
 }
 
+__attribute__((always_inline))
 static inline bool cap_vector_iterator_equals(cap_vector_iterator* iter_one, cap_vector_iterator* iter_two){
 	assert(iter_one != NULL && iter_two != NULL);
 	if(iter_one->data == iter_two->data) return true;
 	return false;
 }
 
+__attribute__((always_inline))
 static inline cap_vector_iterator* cap_vector_begin(cap_vector* vector){
 	assert(vector != NULL);
 	// begin() is alias to init
 	return cap_vector_iterator_init(vector);
 }
 
+__attribute__((always_inline))
 static inline cap_vector_iterator* cap_vector_end(cap_vector* vector){
 	assert(vector != NULL);
 	cap_vector_iterator* iterator = cap_vector_iterator_init(vector);
@@ -361,24 +371,33 @@ static inline cap_vector_iterator* cap_vector_end(cap_vector* vector){
 	return iterator;
 }
 
+__attribute__((always_inline))
 static inline bool cap_vector_iterator_equals_predicate(cap_vector_iterator* iter, bool (*predicate_fn)(void*)){
 	assert(iter != NULL & predicate_fn != NULL);
 	return predicate_fn(iter->data);
 }
 
+__attribute__((always_inline))
 static inline size_t cap_vector_iterator_index(cap_vector_iterator* iterator){
 	assert(iterator != NULL);
 	return iterator->_current_index;
 }
 
+__attribute__((always_inline))
 static inline void cap_vector_iterator_decrement(cap_vector_iterator* iterator){
 	assert(iterator != NULL);
-	iterator->_current_index--;
-	if(iterator->_current_index < 0){
+	if(iterator->_current_index <= 0){
 		iterator->data = NULL;
 		return;
 	}
+	if(iterator->data != NULL) iterator->_current_index--;
 	iterator->data = iterator->_internal_pointer->_internal_buffer[iterator->_current_index];
+}
+
+__attribute__((always_inline))
+static inline void cap_vector_iterator_free(cap_vector_iterator* iterator){
+	assert(iterator != NULL);
+	free(iterator);
 }
 
 #endif // !CAP_VECTOR_H

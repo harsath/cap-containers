@@ -51,9 +51,10 @@ typedef struct {
 } cap_fixed_queue;
 
 // Prototypes (Public APIs)
+// Init:
 static inline cap_fixed_queue* cap_fixed_queue_init(size_t);
-static inline void cap_fixed_queue_free(cap_fixed_queue*);
-static inline void cap_fixed_queue_deep_free(cap_fixed_queue*);
+
+// Lookup & Update:
 static inline size_t cap_fixed_queue_capacity(const cap_fixed_queue*);
 static inline size_t cap_fixed_queue_size(const cap_fixed_queue*);
 static inline size_t cap_fixed_queue_remaining_space(const cap_fixed_queue*);
@@ -62,6 +63,10 @@ static inline void* cap_fixed_queue_pop(cap_fixed_queue*);
 static inline void* cap_fixed_queue_front(cap_fixed_queue*);
 static inline void* cap_fixed_queue_back(cap_fixed_queue*);
 static inline void cap_fixed_queue_swap(cap_fixed_queue* fixed_queue_one, cap_fixed_queue* fixed_queue_two);
+
+// Memory:
+static inline void cap_fixed_queue_free(cap_fixed_queue*);
+static inline void cap_fixed_queue_deep_free(cap_fixed_queue*);
 
 // Prototypes (Internal helpers)
 static inline _cap_list* _cap_list_init();

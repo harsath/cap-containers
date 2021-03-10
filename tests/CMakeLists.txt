@@ -18,3 +18,4 @@ add_executable(
 	${PROJECT_NAME}
 	${SOURCE_FILES}
 )
+target_compile_options(${PROJECT_NAME} PRIVATE -fno-omit-frame-pointer)

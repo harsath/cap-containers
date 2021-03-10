@@ -48,7 +48,10 @@ typedef struct {
 } cap_list_iterator;
 
 // Prototypes (Public APIs)
+// Init:
 static inline cap_list* cap_list_init();
+
+// Lookup & Update:
 static inline void* cap_list_find_if(const cap_list*, bool (*)(void*));
 static inline bool cap_list_push_front(cap_list*, void*);
 static inline bool cap_list_push_back(cap_list*, void*);
@@ -57,6 +60,8 @@ static inline void* cap_list_pop_back(cap_list*);
 static inline void* cap_list_front(const cap_list*);
 static inline void* cap_list_back(const cap_list*);
 static inline bool cap_list_remove_if(cap_list*, bool (*)(void*));
+
+// Memory:
 static inline void cap_list_deep_free(cap_list*);
 static inline void cap_list_free(cap_list*);
 

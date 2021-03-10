@@ -50,15 +50,20 @@ typedef struct {
 } cap_dynamic_queue;
 
 // Prototypes (Public APIs)
+// Init:
 static inline cap_dynamic_queue* cap_dynamic_queue_init();
-static inline void cap_dynamic_queue_free(cap_dynamic_queue*);
-static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
+
+// Lookup & Update:
 static inline size_t cap_dynamic_queue_size(const cap_dynamic_queue*);
 static inline bool cap_dynamic_queue_push(cap_dynamic_queue*, void*);
 static inline void* cap_dynamic_queue_pop(cap_dynamic_queue*);
 static inline void* cap_dynamic_queue_front(cap_dynamic_queue*);
 static inline void* cap_dynamic_queue_back(cap_dynamic_queue*);
 static inline void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two);
+
+// Memory:
+static inline void cap_dynamic_queue_free(cap_dynamic_queue*);
+static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
 
 // Prototypes (Internal helpers)
 static inline _cap_list* _cap_list_init();
