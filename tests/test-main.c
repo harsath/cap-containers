@@ -4,12 +4,14 @@ extern void test_dynamic_queue(void);
 extern void test_fixed_queue(void);
 extern void test_list(void);
 extern void test_vector(void);
+extern void test_stack(void);
 
 int main(int argc, const char*const argv[]){
 	test_dynamic_queue();
 	test_fixed_queue();
 	test_list();
 	test_vector();
+	test_stack();
 	
 	return 0;
 }

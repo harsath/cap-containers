@@ -13,6 +13,7 @@ set(
 	test-list.c
 	test-dynamic-queue.c
 	test-vector.c
+	test-stack.c
 )
 add_executable(
 	${PROJECT_NAME}
