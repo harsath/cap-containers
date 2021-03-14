@@ -14,6 +14,7 @@ set(
 	test-dynamic-queue.c
 	test-vector.c
 	test-stack.c
+	test-forward-list.c
 )
 add_executable(
 	${PROJECT_NAME}
