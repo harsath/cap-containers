@@ -15,9 +15,16 @@ set(
 	test-vector.c
 	test-stack.c
 	test-forward-list.c
+	test-hash-table-separate-chaining.c
 )
 add_executable(
 	${PROJECT_NAME}
 	${SOURCE_FILES}
 )
-target_compile_options(${PROJECT_NAME} PRIVATE -fno-omit-frame-pointer)
+if(LOCAL_DEV)
+	set(CMAKE_C_FLAGS "-O2 -Wall -g3 -fsanitize=address")
+	set(CMAKE_CXX_FLAGS "-O2 -Wall -g3 -fsanitize=address")
+else()
+	set(CMAKE_C_FLAGS "-O2 -g3 -Wall")
+	set(CMAKE_CXX_FLAGS "-O2 -g3 -Wall")
+endif()

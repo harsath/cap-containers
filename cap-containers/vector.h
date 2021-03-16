@@ -373,7 +373,7 @@ static inline cap_vector_iterator* cap_vector_end(cap_vector* vector){
 
 __attribute__((always_inline))
 static inline bool cap_vector_iterator_equals_predicate(cap_vector_iterator* iter, bool (*predicate_fn)(void*)){
-	assert(iter != NULL & predicate_fn != NULL);
+	assert(iter != NULL && predicate_fn != NULL);
 	return predicate_fn(iter->data);
 }
 
