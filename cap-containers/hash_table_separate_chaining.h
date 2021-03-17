@@ -56,42 +56,42 @@ typedef struct {
 
 // Prototypes(Public APIs)
 // Init:
-static inline cap_hash_table* cap_hash_table_init(size_t key_size, size_t init_capacity);
+static cap_hash_table* cap_hash_table_init(size_t key_size, size_t init_capacity);
 
 // Lookup & Update:
-static inline bool cap_hash_table_contains(cap_hash_table* table, void* key);
-static inline bool cap_hash_table_insert(cap_hash_table* table, void* key, void* value);
-static inline void* cap_hash_table_lookup(cap_hash_table* table, void* key);
-static inline bool cap_hash_table_erase(cap_hash_table*, void* key);
-static inline bool cap_hash_table_deep_erase(cap_hash_table*, void* key);
-static inline bool cap_hash_table_empty(cap_hash_table*);
-static inline void cap_hash_table_swap(cap_hash_table*, cap_hash_table*);
-static inline size_t cap_hash_table_bucket_size(cap_hash_table*);
-static inline size_t cap_hash_table_size(cap_hash_table*);
-static inline void cap_hash_table_free(cap_hash_table*);
-static inline void cap_hash_table_deep_free(cap_hash_table*);
+static bool cap_hash_table_contains(cap_hash_table* table, void* key);
+static bool cap_hash_table_insert(cap_hash_table* table, void* key, void* value);
+static void* cap_hash_table_lookup(cap_hash_table* table, void* key);
+static bool cap_hash_table_erase(cap_hash_table*, void* key);
+static bool cap_hash_table_deep_erase(cap_hash_table*, void* key);
+static bool cap_hash_table_empty(cap_hash_table*);
+static void cap_hash_table_swap(cap_hash_table*, cap_hash_table*);
+static size_t cap_hash_table_bucket_size(cap_hash_table*);
+static size_t cap_hash_table_size(cap_hash_table*);
+static void cap_hash_table_free(cap_hash_table*);
+static void cap_hash_table_deep_free(cap_hash_table*);
 
 // Prototypes(Internal helpers)
 // Hash table:
-static inline cap_hash_table* _cap_hash_table_rehash(cap_hash_table*);
-static inline bool _cap_hash_table_default_compare(void* key_one, void* key_two, size_t key_size);
+static cap_hash_table* _cap_hash_table_rehash(cap_hash_table*);
+static bool _cap_hash_table_default_compare(void* key_one, void* key_two, size_t key_size);
 size_t _hash_fn_default_hash(uint8_t* key, size_t key_size);
 
 // Linked list chain:
 // Init:
-static inline _cap_ll_chain* _cap_ll_chain_init();
+static _cap_ll_chain* _cap_ll_chain_init();
 
 // Lookups:
-static inline _cap_hash_node* _cap_ll_chain_find_if(_cap_ll_chain*, void* key, size_t key_size);
-static inline bool _cap_ll_chain_push_front(_cap_ll_chain*, void* key, size_t key_size, void* data);
-static inline bool _cap_ll_chain_remove_if(_cap_ll_chain*, void* key, size_t key_size, bool is_deep_free);
-static inline size_t _cap_ll_chain_size(_cap_ll_chain*);
+static _cap_hash_node* _cap_ll_chain_find_if(_cap_ll_chain*, void* key, size_t key_size);
+static bool _cap_ll_chain_push_front(_cap_ll_chain*, void* key, size_t key_size, void* data);
+static bool _cap_ll_chain_remove_if(_cap_ll_chain*, void* key, size_t key_size, bool is_deep_free);
+static size_t _cap_ll_chain_size(_cap_ll_chain*);
 
 // Memory:
-static inline void _cap_ll_chain_free(_cap_ll_chain*);
-static inline void _cap_ll_chain_deep_free(_cap_ll_chain*);
+static void _cap_ll_chain_free(_cap_ll_chain*);
+static void _cap_ll_chain_deep_free(_cap_ll_chain*);
 
-static inline cap_hash_table* _cap_hash_table_rehash(cap_hash_table* hash_table_original){
+static cap_hash_table* _cap_hash_table_rehash(cap_hash_table* hash_table_original){
 	assert(hash_table_original != NULL);
 	cap_hash_table* new_hash_table = cap_hash_table_init(hash_table_original->key_size, hash_table_original->capacity * 2);
 	for(size_t i = 0; i < hash_table_original->size; i++){
@@ -108,14 +108,12 @@ static inline cap_hash_table* _cap_hash_table_rehash(cap_hash_table* hash_table_
 	return new_hash_table;
 }
 
-__attribute__((always_inline))
-static inline size_t cap_hash_table_bucket_size(cap_hash_table* hash_table){
+static size_t cap_hash_table_bucket_size(cap_hash_table* hash_table){
 	assert(hash_table != NULL);
 	return hash_table->capacity;
 }
 
-__attribute__((always_inline))
-static inline void cap_hash_table_swap(cap_hash_table* hash_table_one, cap_hash_table* hash_table_two){
+static void cap_hash_table_swap(cap_hash_table* hash_table_one, cap_hash_table* hash_table_two){
 	assert(hash_table_one != NULL && hash_table_two != NULL);
 	_cap_ll_chain* temp_one_hash_bucket = hash_table_one->_hash_buckets;
 	size_t temp_one_size = hash_table_one->size;
@@ -137,20 +135,17 @@ static inline void cap_hash_table_swap(cap_hash_table* hash_table_one, cap_hash_
 	hash_table_two->size = temp_one_size;
 }
 
-__attribute__((always_inline))
-static inline bool cap_hash_table_empty(cap_hash_table* hash_table){
+static bool cap_hash_table_empty(cap_hash_table* hash_table){
 	assert(hash_table != NULL);
 	return (hash_table->size == 0);
 }
 
-__attribute__((always_inline))
-static inline size_t cap_hash_table_size(cap_hash_table* hash_table){
+static size_t cap_hash_table_size(cap_hash_table* hash_table){
 	assert(hash_table != NULL);
 	return hash_table->size;
 }
 
-__attribute__((always_inline))
-static inline bool cap_hash_table_deep_erase(cap_hash_table* hash_table, void* key){
+static bool cap_hash_table_deep_erase(cap_hash_table* hash_table, void* key){
 	assert(hash_table != NULL && key != NULL);
 	size_t key_index = hash_table->hash_fn((uint8_t*)key, hash_table->key_size) % hash_table->capacity;
 	bool remove_if_return = _cap_ll_chain_remove_if(&hash_table->_hash_buckets[key_index], key, hash_table->key_size, true);
@@ -158,8 +153,7 @@ static inline bool cap_hash_table_deep_erase(cap_hash_table* hash_table, void* k
 	return remove_if_return;
 }
 
-__attribute__((always_inline))
-static inline bool cap_hash_table_erase(cap_hash_table* hash_table, void* key){
+static bool cap_hash_table_erase(cap_hash_table* hash_table, void* key){
 	assert(hash_table != NULL && key != NULL);
 	size_t key_index = hash_table->hash_fn((uint8_t*)key, hash_table->key_size) % hash_table->capacity;
 	bool remove_if_return = _cap_ll_chain_remove_if(&hash_table->_hash_buckets[key_index], key, hash_table->key_size, false);
@@ -167,8 +161,7 @@ static inline bool cap_hash_table_erase(cap_hash_table* hash_table, void* key){
 	return remove_if_return;
 }
 
-__attribute__((always_inline))
-static inline void* cap_hash_table_lookup(cap_hash_table* hash_table, void* key){
+static void* cap_hash_table_lookup(cap_hash_table* hash_table, void* key){
 	assert(hash_table != NULL && key != NULL);
 	size_t key_index = hash_table->hash_fn((uint8_t*)key, hash_table->key_size) % hash_table->capacity;
 	_cap_hash_node* find_if_key = _cap_ll_chain_find_if(&hash_table->_hash_buckets[key_index], key, hash_table->key_size);
@@ -176,7 +169,7 @@ static inline void* cap_hash_table_lookup(cap_hash_table* hash_table, void* key)
 	return find_if_key->data;
 }
 
-static inline bool cap_hash_table_insert(cap_hash_table* hash_table, void* key, void* value){
+static bool cap_hash_table_insert(cap_hash_table* hash_table, void* key, void* value){
 	assert(hash_table != NULL && key != NULL && value != NULL);
 	if(CAP_HASHTABLE_LOAD_FACTOR(hash_table)){
 		cap_hash_table* rehashed_table = _cap_hash_table_rehash(hash_table);
@@ -194,8 +187,7 @@ static inline bool cap_hash_table_insert(cap_hash_table* hash_table, void* key, 
 	return true;
 }
 
-__attribute__((always_inline))
-static inline bool cap_hash_table_contains(cap_hash_table* hash_table, void* key){
+static bool cap_hash_table_contains(cap_hash_table* hash_table, void* key){
 	assert(hash_table != NULL && key != NULL);
 	size_t index = hash_table->hash_fn((uint8_t*)key, hash_table->key_size) % hash_table->capacity;
 	void* find_if_return = _cap_ll_chain_find_if(&hash_table->_hash_buckets[index], key, hash_table->key_size);
@@ -203,8 +195,7 @@ static inline bool cap_hash_table_contains(cap_hash_table* hash_table, void* key
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void cap_hash_table_free(cap_hash_table* hash_table){
+static void cap_hash_table_free(cap_hash_table* hash_table){
 	for(size_t i = 0; i < hash_table->size; i++){
 		_cap_ll_chain_free(&hash_table->_hash_buckets[i]);
 	}
@@ -212,8 +203,7 @@ static inline void cap_hash_table_free(cap_hash_table* hash_table){
 	free(hash_table);
 }
 
-__attribute__((always_inline))
-static inline void cap_hash_table_deep_free(cap_hash_table* hash_table){
+static void cap_hash_table_deep_free(cap_hash_table* hash_table){
 	for(size_t i = 0; i < hash_table->size; i++){
 		_cap_ll_chain_deep_free(&hash_table->_hash_buckets[i]);
 	}
@@ -221,8 +211,7 @@ static inline void cap_hash_table_deep_free(cap_hash_table* hash_table){
 	free(hash_table);
 }
 
-__attribute__((always_inline))
-static inline cap_hash_table* cap_hash_table_init(size_t key_size, size_t init_capacity){
+static cap_hash_table* cap_hash_table_init(size_t key_size, size_t init_capacity){
 	cap_hash_table* hash_table = (cap_hash_table*) CAP_ALLOCATOR(cap_hash_table, 1);
 	hash_table->capacity = init_capacity;
 	hash_table->key_size = key_size;
@@ -237,16 +226,14 @@ static inline cap_hash_table* cap_hash_table_init(size_t key_size, size_t init_c
 	return hash_table;
 }
 
-__attribute__((always_inline))
-static inline _cap_ll_chain* _cap_ll_chain_init(){
+static _cap_ll_chain* _cap_ll_chain_init(){
 	_cap_ll_chain* f_list = (_cap_ll_chain*) CAP_ALLOCATOR(_cap_ll_chain, 1);
 	f_list->_head_node = NULL;
 	f_list->_num_items = 0;
 	return f_list;
 }
 
-__attribute__((always_inline))
-static inline bool _cap_ll_chain_push_front(_cap_ll_chain* f_list, void* key, size_t key_size, void* data){
+static bool _cap_ll_chain_push_front(_cap_ll_chain* f_list, void* key, size_t key_size, void* data){
 	assert(f_list != NULL && key != NULL && data != NULL);
 	_cap_hash_node* current_head = f_list->_head_node;
 	_cap_hash_node* hash_node = (_cap_hash_node*) CAP_ALLOCATOR(_cap_hash_node, 1);
@@ -259,8 +246,7 @@ static inline bool _cap_ll_chain_push_front(_cap_ll_chain* f_list, void* key, si
 	return true;
 }
 
-__attribute__((always_inline))
-static inline _cap_hash_node* _cap_ll_chain_find_if(_cap_ll_chain* f_list, void* key, size_t key_size){
+static _cap_hash_node* _cap_ll_chain_find_if(_cap_ll_chain* f_list, void* key, size_t key_size){
 	assert(f_list != NULL && key != NULL);
 	_cap_hash_node* current_node = f_list->_head_node;
 	while(current_node != NULL){
@@ -271,7 +257,7 @@ static inline _cap_hash_node* _cap_ll_chain_find_if(_cap_ll_chain* f_list, void*
 	return NULL;
 }
 
-static inline bool _cap_ll_chain_remove_if(_cap_ll_chain* f_list, void* key, size_t key_size, bool deep_free){
+static bool _cap_ll_chain_remove_if(_cap_ll_chain* f_list, void* key, size_t key_size, bool deep_free){
 	assert(f_list != NULL && key != NULL);
 	_cap_hash_node* current_node = f_list->_head_node;
 	_cap_hash_node* prev_node = NULL;
@@ -307,14 +293,12 @@ static inline bool _cap_ll_chain_remove_if(_cap_ll_chain* f_list, void* key, siz
 	return false;
 }
 
-__attribute__((always_inline))
-static inline size_t _cap_ll_chain_size(_cap_ll_chain* f_list){
+static size_t _cap_ll_chain_size(_cap_ll_chain* f_list){
 	assert(f_list != NULL);
 	return f_list->_num_items;
 }
 
-__attribute__((always_inline))
-static inline void _cap_ll_chain_free(_cap_ll_chain* f_list){
+static void _cap_ll_chain_free(_cap_ll_chain* f_list){
 	assert(f_list != NULL);
 	_cap_hash_node* current_node = f_list->_head_node;
 	while(current_node != NULL){
@@ -325,8 +309,7 @@ static inline void _cap_ll_chain_free(_cap_ll_chain* f_list){
 	}
 }
 
-__attribute__((always_inline))
-static inline void _cap_ll_chain_deep_free(_cap_ll_chain* f_list){
+static void _cap_ll_chain_deep_free(_cap_ll_chain* f_list){
 	assert(f_list != NULL);
 	_cap_hash_node* current_node = f_list->_head_node;
 	while(current_node != NULL){
@@ -338,13 +321,11 @@ static inline void _cap_ll_chain_deep_free(_cap_ll_chain* f_list){
 	}
 }
 
-__attribute__((always_inline))
-static inline bool _cap_hash_table_default_compare(void* key_one, void* key_two, size_t key_size){
+static bool _cap_hash_table_default_compare(void* key_one, void* key_two, size_t key_size){
 	assert(key_one != NULL && key_two != NULL);
 	return (memcmp(key_one, key_two, key_size) == 0);
 }
 
-__attribute__((always_inline))
 size_t _hash_fn_default_hash(uint8_t* key, size_t key_size){
 	// Hash type: djb2
 	// Reference: http://www.cse.yorku.ca/~oz/hash.html

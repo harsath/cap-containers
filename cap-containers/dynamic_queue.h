@@ -51,30 +51,30 @@ typedef struct {
 
 // Prototypes (Public APIs)
 // Init:
-static inline cap_dynamic_queue* cap_dynamic_queue_init();
+static cap_dynamic_queue* cap_dynamic_queue_init();
 
 // Lookup & Update:
-static inline size_t cap_dynamic_queue_size(const cap_dynamic_queue*);
-static inline bool cap_dynamic_queue_push(cap_dynamic_queue*, void*);
-static inline void* cap_dynamic_queue_pop(cap_dynamic_queue*);
-static inline void* cap_dynamic_queue_front(cap_dynamic_queue*);
-static inline void* cap_dynamic_queue_back(cap_dynamic_queue*);
-static inline void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two);
+static size_t cap_dynamic_queue_size(const cap_dynamic_queue*);
+static bool cap_dynamic_queue_push(cap_dynamic_queue*, void*);
+static void* cap_dynamic_queue_pop(cap_dynamic_queue*);
+static void* cap_dynamic_queue_front(cap_dynamic_queue*);
+static void* cap_dynamic_queue_back(cap_dynamic_queue*);
+static void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two);
 
 // Memory:
-static inline void cap_dynamic_queue_free(cap_dynamic_queue*);
-static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
+static void cap_dynamic_queue_free(cap_dynamic_queue*);
+static void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
 
 // Prototypes (Internal helpers)
-static inline _cap_list* _cap_list_init();
-static inline bool _cap_list_push_front(_cap_list*, void*);
-static inline void* _cap_list_pop_back(_cap_list*);
-static inline void* _cap_list_front(const _cap_list*);
-static inline void* _cap_list_back(const _cap_list*);
-static inline void _cap_list_deep_free(_cap_list*);
-static inline void _cap_list_free(_cap_list*);
+static _cap_list* _cap_list_init();
+static bool _cap_list_push_front(_cap_list*, void*);
+static void* _cap_list_pop_back(_cap_list*);
+static void* _cap_list_front(const _cap_list*);
+static void* _cap_list_back(const _cap_list*);
+static void _cap_list_deep_free(_cap_list*);
+static void _cap_list_free(_cap_list*);
 
-static inline cap_dynamic_queue* cap_dynamic_queue_init(){
+static cap_dynamic_queue* cap_dynamic_queue_init(){
 	cap_dynamic_queue* dynamic_queue = (cap_dynamic_queue*) CAP_ALLOCATOR(cap_dynamic_queue, 1);
 	CAP_CHECK_NULL(dynamic_queue);
 	dynamic_queue->_internal_list = _cap_list_init();
@@ -83,34 +83,31 @@ static inline cap_dynamic_queue* cap_dynamic_queue_init(){
 	return dynamic_queue;
 }
 
-static inline void cap_dynamic_queue_free(cap_dynamic_queue* dynamic_queue){
+static void cap_dynamic_queue_free(cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	_cap_list_free(dynamic_queue->_internal_list);
 	free(dynamic_queue);
 }
 
-static inline void cap_dynamic_queue_deep_free(cap_dynamic_queue* dynamic_queue){
+static void cap_dynamic_queue_deep_free(cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	_cap_list_deep_free(dynamic_queue->_internal_list);
 	free(dynamic_queue);
 }
 
-__attribute__((always_inline))
-static inline size_t cap_dynamic_queue_size(const cap_dynamic_queue* dynamic_queue){
+static size_t cap_dynamic_queue_size(const cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	return dynamic_queue->_current_size;
 }
 
-__attribute__((always_inline))
-static inline bool cap_dynamic_queue_push(cap_dynamic_queue* dynamic_queue, void* data){
+static bool cap_dynamic_queue_push(cap_dynamic_queue* dynamic_queue, void* data){
 	assert((dynamic_queue != NULL) && (data != NULL));
 	bool return_val = _cap_list_push_front(dynamic_queue->_internal_list, data);
 	dynamic_queue->_current_size++;
 	return return_val;
 }
 
-__attribute__((always_inline))
-static inline void* cap_dynamic_queue_pop(cap_dynamic_queue* dynamic_queue){
+static void* cap_dynamic_queue_pop(cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	if(dynamic_queue->_current_size <= 0) return NULL;
 	void* returner = _cap_list_pop_back(dynamic_queue->_internal_list);
@@ -118,21 +115,18 @@ static inline void* cap_dynamic_queue_pop(cap_dynamic_queue* dynamic_queue){
 	return returner;
 }
 
-__attribute__((always_inline))
-static inline void* cap_dynamic_queue_front(cap_dynamic_queue* dynamic_queue){
+static void* cap_dynamic_queue_front(cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	if(dynamic_queue->_current_size <= 0) return NULL;
 	return _cap_list_back(dynamic_queue->_internal_list);
 }
 
-__attribute__((always_inline))
-static inline void* cap_dynamic_queue_back(cap_dynamic_queue* dynamic_queue){
+static void* cap_dynamic_queue_back(cap_dynamic_queue* dynamic_queue){
 	assert(dynamic_queue != NULL);
 	return _cap_list_front(dynamic_queue->_internal_list);
 }
 
-__attribute__((always_inline))
-static inline void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two){
+static void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two){
 	assert((dynamic_queue_one != NULL) && (dynamic_queue_two != NULL));
 	size_t one_size = dynamic_queue_one->_current_size;
 	_cap_list* one_tmp_internal_list = dynamic_queue_one->_internal_list;
@@ -142,7 +136,7 @@ static inline void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, 
 	dynamic_queue_two->_internal_list = one_tmp_internal_list;
 }
 
-static inline _cap_list* _cap_list_init(){
+static _cap_list* _cap_list_init(){
 	_cap_list_node* head_and_tail_nodes = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 2);
 	_cap_list* d_list = (_cap_list*) CAP_ALLOCATOR(_cap_list, 1);
 	d_list->_head_node = head_and_tail_nodes;
@@ -156,7 +150,7 @@ static inline _cap_list* _cap_list_init(){
 	return d_list;
 }
 
-static inline bool _cap_list_push_front(_cap_list* d_list, void* data){
+static bool _cap_list_push_front(_cap_list* d_list, void* data){
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
 	if(new_node == NULL) return false;
@@ -169,8 +163,7 @@ static inline bool _cap_list_push_front(_cap_list* d_list, void* data){
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void* _cap_list_pop_back(_cap_list* d_list){
+static void* _cap_list_pop_back(_cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* pop_node = d_list->_tail_node->previous;
 	d_list->_tail_node->previous = pop_node->previous;
@@ -178,20 +171,17 @@ static inline void* _cap_list_pop_back(_cap_list* d_list){
 	return pop_node->data;
 }
 
-__attribute__((always_inline))
-static inline void* _cap_list_front(const _cap_list* d_list){
+static void* _cap_list_front(const _cap_list* d_list){
 	assert(d_list != NULL);
 	return d_list->_head_node->next->data;
 }
 
-__attribute__((always_inline))
-static inline void* _cap_list_back(const _cap_list* d_list){
+static void* _cap_list_back(const _cap_list* d_list){
 	assert(d_list != NULL);
 	return d_list->_tail_node->previous->data;
 }
 
-__attribute__((always_inline))
-static inline void _cap_list_free(_cap_list* d_list){
+static void _cap_list_free(_cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
@@ -204,8 +194,7 @@ static inline void _cap_list_free(_cap_list* d_list){
 	free(d_list->_head_node);
 }
 
-__attribute__((always_inline))
-static inline void _cap_list_deep_free(_cap_list* d_list){
+static void _cap_list_deep_free(_cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
