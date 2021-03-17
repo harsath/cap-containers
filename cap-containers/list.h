@@ -49,23 +49,23 @@ typedef struct {
 
 // Prototypes (Public APIs)
 // Init:
-static inline cap_list* cap_list_init();
+static cap_list* cap_list_init();
 
 // Lookup & Update:
-static inline void* cap_list_find_if(const cap_list*, bool (*)(void*));
-static inline bool cap_list_push_front(cap_list*, void*);
-static inline bool cap_list_push_back(cap_list*, void*);
-static inline void* cap_list_pop_front(cap_list*);
-static inline void* cap_list_pop_back(cap_list*);
-static inline void* cap_list_front(const cap_list*);
-static inline void* cap_list_back(const cap_list*);
-static inline bool cap_list_remove_if(cap_list*, bool (*)(void*));
+static void* cap_list_find_if(const cap_list*, bool (*)(void*));
+static bool cap_list_push_front(cap_list*, void*);
+static bool cap_list_push_back(cap_list*, void*);
+static void* cap_list_pop_front(cap_list*);
+static void* cap_list_pop_back(cap_list*);
+static void* cap_list_front(const cap_list*);
+static void* cap_list_back(const cap_list*);
+static bool cap_list_remove_if(cap_list*, bool (*)(void*));
 
 // Memory:
-static inline void cap_list_deep_free(cap_list*);
-static inline void cap_list_free(cap_list*);
+static void cap_list_deep_free(cap_list*);
+static void cap_list_free(cap_list*);
 
-static inline cap_list* cap_list_init(){
+static cap_list* cap_list_init(){
 	_cap_list_node* head_and_tail_nodes = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 2);
 	cap_list* d_list = (cap_list*)malloc(sizeof(cap_list));
 	d_list->_head_node = head_and_tail_nodes;
@@ -79,7 +79,7 @@ static inline cap_list* cap_list_init(){
 	return d_list;
 }
 
-static inline bool cap_list_push_front(cap_list* d_list, void* data){
+static bool cap_list_push_front(cap_list* d_list, void* data){
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
 	if(new_node == NULL) return false;
@@ -92,7 +92,7 @@ static inline bool cap_list_push_front(cap_list* d_list, void* data){
 	return true;
 }
 
-static inline bool cap_list_push_back(cap_list* d_list, void* data){
+static bool cap_list_push_back(cap_list* d_list, void* data){
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
 	if(new_node == NULL) return false;
@@ -106,8 +106,7 @@ static inline bool cap_list_push_back(cap_list* d_list, void* data){
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void* cap_list_pop_front(cap_list* d_list){
+static void* cap_list_pop_front(cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* pop_node = d_list->_head_node->next;
 	d_list->_head_node->next = pop_node->next;
@@ -115,8 +114,7 @@ static inline void* cap_list_pop_front(cap_list* d_list){
 	return pop_node->data;
 }
 
-__attribute__((always_inline))
-static inline void* cap_list_pop_back(cap_list* d_list){
+static void* cap_list_pop_back(cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* pop_node = d_list->_tail_node->previous;
 	d_list->_tail_node->previous = pop_node->previous;
@@ -124,22 +122,19 @@ static inline void* cap_list_pop_back(cap_list* d_list){
 	return pop_node->data;
 }
 
-__attribute__((always_inline))
-static inline void* cap_list_front(const cap_list* d_list){
+static void* cap_list_front(const cap_list* d_list){
 	assert(d_list != NULL);
 	return d_list->_head_node->next->data;
 }
 
-__attribute__((always_inline))
-static inline void* cap_list_back(const cap_list* d_list){
+static void* cap_list_back(const cap_list* d_list){
 	assert(d_list != NULL);
 	return d_list->_tail_node->previous->data;
 }
 
 // We will pass the 'data' pointer to the predicate and return the 'data' which returns true; 
 // Returns NULL if not found
-__attribute__((always_inline))
-static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn)(void*)){
+static void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn)(void*)){
 	assert((d_list != NULL) && (predicate_fn != NULL));
 	_cap_list_node* iter_node = d_list->_head_node->next;
 	do {
@@ -153,8 +148,7 @@ static inline void* cap_list_find_if(const cap_list* d_list, bool (*predicate_fn
 }
 
 // Removes the first occurance of predicate's 'true'
-__attribute__((always_inline))
-static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(void*)){
+static bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(void*)){
 	assert((d_list != NULL) && (predicate_fn != NULL));
 	_cap_list_node* iter_node = d_list->_head_node->next;
 	size_t num_removed = 0;
@@ -172,8 +166,7 @@ static inline bool cap_list_remove_if(cap_list* d_list, bool (*predicate_fn)(voi
 	return (num_removed != 0);
 }
 
-__attribute__((always_inline))
-static inline bool cap_list_insert_after(cap_list* d_list, void* insert_after_this_node, void* data){
+static bool cap_list_insert_after(cap_list* d_list, void* insert_after_this_node, void* data){
 	assert((d_list != NULL) && (insert_after_this_node != NULL) && (data != NULL));
 	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);	
 	if(new_node == NULL) return false;
@@ -185,8 +178,7 @@ static inline bool cap_list_insert_after(cap_list* d_list, void* insert_after_th
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void cap_list_free(cap_list* d_list){
+static void cap_list_free(cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;
@@ -199,8 +191,7 @@ static inline void cap_list_free(cap_list* d_list){
 	free(d_list->_head_node);
 }
 
-__attribute__((always_inline))
-static inline void cap_list_deep_free(cap_list* d_list){
+static void cap_list_deep_free(cap_list* d_list){
 	assert(d_list != NULL);
 	_cap_list_node* current_node = d_list->_head_node->next;
 	_cap_list_node* next_node;

@@ -44,60 +44,54 @@ typedef struct {
 } cap_stack;
 
 // Prototypes (Public APIs)
-static inline cap_stack* cap_stack_init();
-static inline bool cap_stack_push(cap_stack*, void*);
-static inline void* cap_stack_pop(cap_stack*);
-static inline void* cap_stack_top(cap_stack*);
-static inline size_t cap_stack_size(cap_stack*);
-static inline bool cap_stack_empty(cap_stack*);
-static inline void cap_stack_swap(cap_stack*, cap_stack*);
+static cap_stack* cap_stack_init();
+static bool cap_stack_push(cap_stack*, void*);
+static void* cap_stack_pop(cap_stack*);
+static void* cap_stack_top(cap_stack*);
+static size_t cap_stack_size(cap_stack*);
+static bool cap_stack_empty(cap_stack*);
+static void cap_stack_swap(cap_stack*, cap_stack*);
 
 // Prototypes (Internal helpers)
-static inline bool _cap_vector_push_back(_cap_vector*, void*);
-static inline _cap_vector* _cap_vector_init(size_t); 
-static inline void* _cap_vector_pop_back(_cap_vector*);
-static inline void* _cap_vector_back(_cap_vector*);
+static bool _cap_vector_push_back(_cap_vector*, void*);
+static _cap_vector* _cap_vector_init(size_t); 
+static void* _cap_vector_pop_back(_cap_vector*);
+static void* _cap_vector_back(_cap_vector*);
 
-static inline cap_stack* cap_stack_init(){
+static cap_stack* cap_stack_init(){
 	cap_stack* stack = (cap_stack*) CAP_ALLOCATOR(cap_stack, 1);
 	CAP_CHECK_NULL(stack);
 	stack->_internal_container = _cap_vector_init(CAP_STACK_INITIAL_SIZE);
 	return stack;
 }
 
-__attribute__((always_inline))
-static inline bool cap_stack_push(cap_stack* stack, void* data){
+static bool cap_stack_push(cap_stack* stack, void* data){
 	return _cap_vector_push_back(stack->_internal_container, data);
 }
 
-__attribute__((always_inline))
-static inline void* cap_stack_pop(cap_stack* stack){
+static void* cap_stack_pop(cap_stack* stack){
 	return _cap_vector_pop_back(stack->_internal_container);
 }
 
-__attribute__((always_inline))
-static inline void* cap_stack_top(cap_stack* stack){
+static void* cap_stack_top(cap_stack* stack){
 	return _cap_vector_back(stack->_internal_container);
 }
 
-__attribute__((always_inline))
-static inline size_t cap_stack_size(cap_stack* stack){
+static size_t cap_stack_size(cap_stack* stack){
 	return stack->_internal_container->_size;
 }
 
-__attribute__((always_inline))
-static inline bool cap_stack_empty(cap_stack* stack){
+static bool cap_stack_empty(cap_stack* stack){
 	return (stack->_internal_container->_size == 0);
 }
 
-__attribute__((always_inline))
-static inline void cap_stack_swap(cap_stack* stack_one, cap_stack* stack_two){
+static void cap_stack_swap(cap_stack* stack_one, cap_stack* stack_two){
 	_cap_vector* one_tmp_internal_container = stack_one->_internal_container;
 	stack_one->_internal_container = stack_two->_internal_container;
 	stack_two->_internal_container = one_tmp_internal_container;
 }
 
-static inline _cap_vector* _cap_vector_init(size_t initial_size){
+static _cap_vector* _cap_vector_init(size_t initial_size){
 	assert(initial_size > 0);
 	_cap_vector* vector = (_cap_vector*) CAP_ALLOCATOR(_cap_vector, 1);
 	vector->_internal_buffer = (CAP_GENERIC_TYPE_PTR*) CAP_ALLOCATOR(CAP_GENERIC_TYPE_PTR, initial_size);	
@@ -106,7 +100,7 @@ static inline _cap_vector* _cap_vector_init(size_t initial_size){
 	return vector;
 }
 
-static inline bool _cap_vector_reserve(_cap_vector* vector, size_t new_size){
+static bool _cap_vector_reserve(_cap_vector* vector, size_t new_size){
 	assert(vector != NULL && new_size > 0);
 	CAP_GENERIC_TYPE_PTR* tmp_ptr = (CAP_GENERIC_TYPE_PTR*) realloc(vector->_internal_buffer, 
 						sizeof(CAP_GENERIC_TYPE_PTR) * new_size);
@@ -116,8 +110,7 @@ static inline bool _cap_vector_reserve(_cap_vector* vector, size_t new_size){
 	return true;
 }
 
-__attribute__((always_inline))
-static inline bool _cap_vector_push_back(_cap_vector* vector, void* data){
+static bool _cap_vector_push_back(_cap_vector* vector, void* data){
 	assert(vector != NULL && data != NULL);
 	if(vector->_capacity <= vector->_size)
 		if(!_cap_vector_reserve(vector, vector->_capacity * 2)) return false;
@@ -125,15 +118,13 @@ static inline bool _cap_vector_push_back(_cap_vector* vector, void* data){
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void* _cap_vector_pop_back(_cap_vector* vector){
+static void* _cap_vector_pop_back(_cap_vector* vector){
 	assert(vector != NULL);
 	if(vector->_size <= 0) return NULL;
 	return vector->_internal_buffer[--vector->_size];
 }
 
-__attribute__((always_inline))
-static inline void* _cap_vector_back(_cap_vector* vector){
+static void* _cap_vector_back(_cap_vector* vector){
 	assert(vector != NULL);
 	return vector->_size == 0 ? NULL : vector->_internal_buffer[vector->_size-1];
 }

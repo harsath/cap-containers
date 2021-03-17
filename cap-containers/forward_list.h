@@ -42,30 +42,30 @@ typedef struct {
 
 // Prototypes (Public APIs)
 // Init:
-static inline cap_forward_list* cap_forward_list_init();
+static cap_forward_list* cap_forward_list_init();
 
 // Lookup & Update:
-static inline void* cap_forward_list_find_if(cap_forward_list*, bool (*)(void*));
-static inline bool cap_forward_list_push_front(cap_forward_list*, void*);
-static inline void* cap_forward_list_pop_front(cap_forward_list*);
-static inline void* cap_forward_list_front(cap_forward_list*);
-static inline size_t cap_forward_list_size(cap_forward_list*);
-static inline bool cap_forward_list_remove_if(cap_forward_list*, bool (*)(void*));
-static inline bool cap_forward_list_empty(cap_forward_list*);
-static inline void cap_forward_list_swap(cap_forward_list*, cap_forward_list*);
+static void* cap_forward_list_find_if(cap_forward_list*, bool (*)(void*));
+static bool cap_forward_list_push_front(cap_forward_list*, void*);
+static void* cap_forward_list_pop_front(cap_forward_list*);
+static void* cap_forward_list_front(cap_forward_list*);
+static size_t cap_forward_list_size(cap_forward_list*);
+static bool cap_forward_list_remove_if(cap_forward_list*, bool (*)(void*));
+static bool cap_forward_list_empty(cap_forward_list*);
+static void cap_forward_list_swap(cap_forward_list*, cap_forward_list*);
 
 // Memory:
-static inline void cap_forward_list_free(cap_forward_list*);
-static inline void cap_forward_list_deep_free(cap_forward_list*);
+static void cap_forward_list_free(cap_forward_list*);
+static void cap_forward_list_deep_free(cap_forward_list*);
 
-static inline cap_forward_list* cap_forward_list_init(){
+static cap_forward_list* cap_forward_list_init(){
 	cap_forward_list* f_list = (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1);
 	f_list->head = NULL;
 	f_list->size = 0;
 	return f_list;
 }
 
-static inline bool cap_forward_list_push_front(cap_forward_list* f_list, void* data){
+static bool cap_forward_list_push_front(cap_forward_list* f_list, void* data){
 	assert(f_list != NULL && data != NULL);
 	_cap_flist_node* current_node = f_list->head;
 	f_list->head = (_cap_flist_node*) CAP_ALLOCATOR(_cap_flist_node, 1);
@@ -76,8 +76,7 @@ static inline bool cap_forward_list_push_front(cap_forward_list* f_list, void* d
 	return true;
 }
 
-__attribute__((always_inline))
-static inline void* cap_forward_list_pop_front(cap_forward_list* f_list){
+static void* cap_forward_list_pop_front(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	if(f_list->head == NULL) return NULL;
 	void* returner = f_list->head->data;
@@ -86,15 +85,13 @@ static inline void* cap_forward_list_pop_front(cap_forward_list* f_list){
 	return returner;
 }
 
-__attribute__((always_inline))
-static inline void* cap_forward_list_front(cap_forward_list* f_list){
+static void* cap_forward_list_front(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	if(f_list->head == NULL) return NULL;
 	return f_list->head->data;
 }
 
-__attribute__((always_inline))
-static inline void cap_forward_list_swap(cap_forward_list* f_list_one, cap_forward_list* f_list_two){
+static void cap_forward_list_swap(cap_forward_list* f_list_one, cap_forward_list* f_list_two){
 	assert(f_list_one != NULL && f_list_two != NULL);
 	_cap_flist_node* one_temp_head = f_list_one->head;
 	size_t one_temp_size = f_list_one->size;
@@ -104,8 +101,7 @@ static inline void cap_forward_list_swap(cap_forward_list* f_list_one, cap_forwa
 	f_list_two->size = one_temp_size;
 }
 
-__attribute__((always_inline))
-static inline void cap_forward_list_free(cap_forward_list* f_list){
+static void cap_forward_list_free(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	_cap_flist_node* current_node = f_list->head;
 	while(current_node != NULL){
@@ -115,14 +111,12 @@ static inline void cap_forward_list_free(cap_forward_list* f_list){
 	}
 }
 
-__attribute__((always_inline))
-static inline size_t cap_forward_list_size(cap_forward_list* f_list){
+static size_t cap_forward_list_size(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	return f_list->size;
 }
 
-__attribute__((always_inline))
-static inline void cap_forward_list_deep_free(cap_forward_list* f_list){
+static void cap_forward_list_deep_free(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	_cap_flist_node* current_node = f_list->head;
 	while(current_node != NULL){
@@ -133,14 +127,12 @@ static inline void cap_forward_list_deep_free(cap_forward_list* f_list){
 	}
 }
 
-__attribute__((always_inline))
-static inline bool cap_forward_list_empty(cap_forward_list* f_list){
+static bool cap_forward_list_empty(cap_forward_list* f_list){
 	assert(f_list != NULL);
 	return (f_list->size == 0);
 }
 
-__attribute__((always_inline))
-static inline void* cap_forward_list_find_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
+static void* cap_forward_list_find_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
 	assert(f_list != NULL && predicate_fn != NULL);
 	_cap_flist_node* current_node = f_list->head;
 	while(current_node != NULL){
@@ -151,8 +143,7 @@ static inline void* cap_forward_list_find_if(cap_forward_list* f_list, bool (*pr
 	return NULL;
 }
 
-__attribute__((always_inline))
-static inline bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
+static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
 	assert(f_list != NULL && predicate_fn != NULL);
 	_cap_flist_node* current_node = f_list->head;
 	_cap_flist_node* prev_node = NULL;
@@ -181,8 +172,7 @@ static inline bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*p
 	return (num_removed != 0);
 }
 
-// __attribute__((always_inline))
-// static inline bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
+// static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
 // 	cap_forward_list* tmp_iter_list = (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1);
 // 	tmp_iter_list->head = f_list->head;
 // 	tmp_iter_list->size = f_list->size;
