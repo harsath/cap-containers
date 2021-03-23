@@ -21,79 +21,82 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef CAP_FORWARD_LIST_H
 #define CAP_FORWARD_LIST_H
+#include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
-#include <assert.h>
 #include <string.h>
 #define CAP_GENERIC_TYPE unsigned char
-#define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE*
-#define CAP_ALLOCATOR(type, number_of_elements) calloc(number_of_elements, sizeof(type))
+#define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
+#define CAP_ALLOCATOR(type, number_of_elements)                                \
+	calloc(number_of_elements, sizeof(type))
 
 typedef struct _cap_flist_node {
 	CAP_GENERIC_TYPE_PTR data;
-	struct _cap_flist_node* next;
+	struct _cap_flist_node *next;
 } _cap_flist_node;
 
 typedef struct {
 	size_t size;
-	_cap_flist_node* head;
+	_cap_flist_node *head;
 } cap_forward_list;
 
 // Prototypes (Public APIs)
 // Init:
-static cap_forward_list* cap_forward_list_init();
+static cap_forward_list *cap_forward_list_init();
 
 // Lookup & Update:
-static void* cap_forward_list_find_if(cap_forward_list*, bool (*)(void*));
-static bool cap_forward_list_push_front(cap_forward_list*, void*);
-static void* cap_forward_list_pop_front(cap_forward_list*);
-static void* cap_forward_list_front(cap_forward_list*);
-static size_t cap_forward_list_size(cap_forward_list*);
-static bool cap_forward_list_remove_if(cap_forward_list*, bool (*)(void*));
-static bool cap_forward_list_empty(cap_forward_list*);
-static void cap_forward_list_swap(cap_forward_list*, cap_forward_list*);
+static void *cap_forward_list_find_if(cap_forward_list *, bool (*)(void *));
+static bool cap_forward_list_push_front(cap_forward_list *, void *);
+static void *cap_forward_list_pop_front(cap_forward_list *);
+static void *cap_forward_list_front(cap_forward_list *);
+static size_t cap_forward_list_size(cap_forward_list *);
+static bool cap_forward_list_remove_if(cap_forward_list *, bool (*)(void *));
+static bool cap_forward_list_empty(cap_forward_list *);
+static void cap_forward_list_swap(cap_forward_list *, cap_forward_list *);
 
 // Memory:
-static void cap_forward_list_free(cap_forward_list*);
-static void cap_forward_list_deep_free(cap_forward_list*);
+static void cap_forward_list_free(cap_forward_list *);
+static void cap_forward_list_deep_free(cap_forward_list *);
 
-static cap_forward_list* cap_forward_list_init(){
-	cap_forward_list* f_list = (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1);
+static cap_forward_list *cap_forward_list_init() {
+	cap_forward_list *f_list =
+	    (cap_forward_list *)CAP_ALLOCATOR(cap_forward_list, 1);
 	f_list->head = NULL;
 	f_list->size = 0;
 	return f_list;
 }
 
-static bool cap_forward_list_push_front(cap_forward_list* f_list, void* data){
+static bool cap_forward_list_push_front(cap_forward_list *f_list, void *data) {
 	assert(f_list != NULL && data != NULL);
-	_cap_flist_node* current_node = f_list->head;
-	f_list->head = (_cap_flist_node*) CAP_ALLOCATOR(_cap_flist_node, 1);
-	if(f_list->head == NULL) return false;
-	f_list->head->data = (CAP_GENERIC_TYPE_PTR) data;
+	_cap_flist_node *current_node = f_list->head;
+	f_list->head = (_cap_flist_node *)CAP_ALLOCATOR(_cap_flist_node, 1);
+	if (f_list->head == NULL) return false;
+	f_list->head->data = (CAP_GENERIC_TYPE_PTR)data;
 	f_list->head->next = current_node;
 	f_list->size++;
 	return true;
 }
 
-static void* cap_forward_list_pop_front(cap_forward_list* f_list){
+static void *cap_forward_list_pop_front(cap_forward_list *f_list) {
 	assert(f_list != NULL);
-	if(f_list->head == NULL) return NULL;
-	void* returner = f_list->head->data;
+	if (f_list->head == NULL) return NULL;
+	void *returner = f_list->head->data;
 	f_list->head = f_list->head->next;
 	f_list->size--;
 	return returner;
 }
 
-static void* cap_forward_list_front(cap_forward_list* f_list){
+static void *cap_forward_list_front(cap_forward_list *f_list) {
 	assert(f_list != NULL);
-	if(f_list->head == NULL) return NULL;
+	if (f_list->head == NULL) return NULL;
 	return f_list->head->data;
 }
 
-static void cap_forward_list_swap(cap_forward_list* f_list_one, cap_forward_list* f_list_two){
+static void cap_forward_list_swap(cap_forward_list *f_list_one,
+				  cap_forward_list *f_list_two) {
 	assert(f_list_one != NULL && f_list_two != NULL);
-	_cap_flist_node* one_temp_head = f_list_one->head;
+	_cap_flist_node *one_temp_head = f_list_one->head;
 	size_t one_temp_size = f_list_one->size;
 	f_list_one->head = f_list_two->head;
 	f_list_one->size = f_list_two->size;
@@ -101,70 +104,75 @@ static void cap_forward_list_swap(cap_forward_list* f_list_one, cap_forward_list
 	f_list_two->size = one_temp_size;
 }
 
-static void cap_forward_list_free(cap_forward_list* f_list){
+static void cap_forward_list_free(cap_forward_list *f_list) {
 	assert(f_list != NULL);
-	_cap_flist_node* current_node = f_list->head;
-	while(current_node != NULL){
-		_cap_flist_node* next_node = current_node->next;
+	_cap_flist_node *current_node = f_list->head;
+	while (current_node != NULL) {
+		_cap_flist_node *next_node = current_node->next;
 		free(current_node);
 		current_node = next_node;
 	}
 }
 
-static size_t cap_forward_list_size(cap_forward_list* f_list){
+static size_t cap_forward_list_size(cap_forward_list *f_list) {
 	assert(f_list != NULL);
 	return f_list->size;
 }
 
-static void cap_forward_list_deep_free(cap_forward_list* f_list){
+static void cap_forward_list_deep_free(cap_forward_list *f_list) {
 	assert(f_list != NULL);
-	_cap_flist_node* current_node = f_list->head;
-	while(current_node != NULL){
-		_cap_flist_node* next_node = current_node->next;
+	_cap_flist_node *current_node = f_list->head;
+	while (current_node != NULL) {
+		_cap_flist_node *next_node = current_node->next;
 		free(current_node);
 		free(current_node->data);
 		current_node = next_node;
 	}
 }
 
-static bool cap_forward_list_empty(cap_forward_list* f_list){
+static bool cap_forward_list_empty(cap_forward_list *f_list) {
 	assert(f_list != NULL);
 	return (f_list->size == 0);
 }
 
-static void* cap_forward_list_find_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
+static void *cap_forward_list_find_if(cap_forward_list *f_list,
+				      bool (*predicate_fn)(void *)) {
 	assert(f_list != NULL && predicate_fn != NULL);
-	_cap_flist_node* current_node = f_list->head;
-	while(current_node != NULL){
-		if(current_node->data != NULL && predicate_fn(current_node->data))
+	_cap_flist_node *current_node = f_list->head;
+	while (current_node != NULL) {
+		if (current_node->data != NULL &&
+		    predicate_fn(current_node->data))
 			return current_node->data;
 		current_node = current_node->next;
 	}
 	return NULL;
 }
 
-static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
+static bool cap_forward_list_remove_if(cap_forward_list *f_list,
+				       bool (*predicate_fn)(void *)) {
 	assert(f_list != NULL && predicate_fn != NULL);
-	_cap_flist_node* current_node = f_list->head;
-	_cap_flist_node* prev_node = NULL;
+	_cap_flist_node *current_node = f_list->head;
+	_cap_flist_node *prev_node = NULL;
 	size_t num_removed = 0;
-	while(current_node != NULL){
-		if(current_node->data != NULL && predicate_fn(current_node->data)){
-			if(prev_node == NULL && current_node->next == NULL){
+	while (current_node != NULL) {
+		if (current_node->data != NULL &&
+		    predicate_fn(current_node->data)) {
+			if (prev_node == NULL && current_node->next == NULL) {
 				f_list->head = NULL;
 				f_list->size = 0;
 				return true;
-			}else if(prev_node == NULL && current_node->next != NULL){
-				f_list->head = current_node->next;				
+			} else if (prev_node == NULL &&
+				   current_node->next != NULL) {
+				f_list->head = current_node->next;
 				f_list->size--;
 				free(current_node);
-			}else{
+			} else {
 				prev_node->next = current_node->next;
 				f_list->size--;
 				free(current_node);
 			}
 			num_removed += 1;
-		}else{
+		} else {
 			prev_node = current_node;
 			current_node = current_node->next;
 		}
@@ -172,16 +180,16 @@ static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicat
 	return (num_removed != 0);
 }
 
-// static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool (*predicate_fn)(void*)){
-// 	cap_forward_list* tmp_iter_list = (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1);
-// 	tmp_iter_list->head = f_list->head;
-// 	tmp_iter_list->size = f_list->size;
-// 	f_list->head = NULL;
+// static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool
+// (*predicate_fn)(void*)){ 	cap_forward_list* tmp_iter_list =
+// (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1); 	tmp_iter_list->head =
+// f_list->head; 	tmp_iter_list->size = f_list->size; 	f_list->head = NULL;
 // 	f_list->size = 0;
 // 	_cap_flist_node* current_node = tmp_iter_list->head;
 // 	size_t num_removed = 0;
 // 	while(current_node != NULL){
-// 		if(current_node->data != NULL && predicate_fn(current_node->data)){
+// 		if(current_node->data != NULL &&
+// 			predicate_fn(current_node->data)){
 // 			void* delete_node = current_node;
 // 			current_node = current_node->next;
 // 			free(delete_node);
