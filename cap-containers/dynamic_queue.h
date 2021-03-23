@@ -21,61 +21,65 @@
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef CAP_DYNAMIC_QUEUE_H
 #define CAP_DYNAMIC_QUEUE_H
-#include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#define CAP_CHECK_NULL(value) if(value == NULL) return NULL
+#define CAP_CHECK_NULL(value)                                                  \
+	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
-#define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE*
-#define CAP_ALLOCATOR(type, number_of_elements) malloc(sizeof(type) * number_of_elements)
+#define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
+#define CAP_ALLOCATOR(type, number_of_elements)                                \
+	malloc(sizeof(type) * number_of_elements)
 
 // Abstract types
 typedef struct _cap_list_node {
 	CAP_GENERIC_TYPE_PTR data;
-	struct _cap_list_node* next;
-	struct _cap_list_node* previous;
+	struct _cap_list_node *next;
+	struct _cap_list_node *previous;
 } _cap_list_node;
 
 // Head and tail are sentinel nodes. It is design decision.
 typedef struct {
-	_cap_list_node* _head_node;
-	_cap_list_node* _tail_node;
+	_cap_list_node *_head_node;
+	_cap_list_node *_tail_node;
 } _cap_list;
 
 typedef struct {
 	size_t _current_size;
-	_cap_list* _internal_list;
+	_cap_list *_internal_list;
 } cap_dynamic_queue;
 
 // Prototypes (Public APIs)
 // Init:
-static cap_dynamic_queue* cap_dynamic_queue_init();
+static cap_dynamic_queue *cap_dynamic_queue_init();
 
 // Lookup & Update:
-static size_t cap_dynamic_queue_size(const cap_dynamic_queue*);
-static bool cap_dynamic_queue_push(cap_dynamic_queue*, void*);
-static void* cap_dynamic_queue_pop(cap_dynamic_queue*);
-static void* cap_dynamic_queue_front(cap_dynamic_queue*);
-static void* cap_dynamic_queue_back(cap_dynamic_queue*);
-static void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two);
+static size_t cap_dynamic_queue_size(const cap_dynamic_queue *);
+static bool cap_dynamic_queue_push(cap_dynamic_queue *, void *);
+static void *cap_dynamic_queue_pop(cap_dynamic_queue *);
+static void *cap_dynamic_queue_front(cap_dynamic_queue *);
+static void *cap_dynamic_queue_back(cap_dynamic_queue *);
+static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
+				   cap_dynamic_queue *dynamic_queue_two);
 
 // Memory:
-static void cap_dynamic_queue_free(cap_dynamic_queue*);
-static void cap_dynamic_queue_deep_free(cap_dynamic_queue*);
+static void cap_dynamic_queue_free(cap_dynamic_queue *);
+static void cap_dynamic_queue_deep_free(cap_dynamic_queue *);
 
 // Prototypes (Internal helpers)
-static _cap_list* _cap_list_init();
-static bool _cap_list_push_front(_cap_list*, void*);
-static void* _cap_list_pop_back(_cap_list*);
-static void* _cap_list_front(const _cap_list*);
-static void* _cap_list_back(const _cap_list*);
-static void _cap_list_deep_free(_cap_list*);
-static void _cap_list_free(_cap_list*);
+static _cap_list *_cap_list_init();
+static bool _cap_list_push_front(_cap_list *, void *);
+static void *_cap_list_pop_back(_cap_list *);
+static void *_cap_list_front(const _cap_list *);
+static void *_cap_list_back(const _cap_list *);
+static void _cap_list_deep_free(_cap_list *);
+static void _cap_list_free(_cap_list *);
 
-static cap_dynamic_queue* cap_dynamic_queue_init(){
-	cap_dynamic_queue* dynamic_queue = (cap_dynamic_queue*) CAP_ALLOCATOR(cap_dynamic_queue, 1);
+static cap_dynamic_queue *cap_dynamic_queue_init() {
+	cap_dynamic_queue *dynamic_queue =
+	    (cap_dynamic_queue *)CAP_ALLOCATOR(cap_dynamic_queue, 1);
 	CAP_CHECK_NULL(dynamic_queue);
 	dynamic_queue->_internal_list = _cap_list_init();
 	CAP_CHECK_NULL(dynamic_queue->_internal_list);
@@ -83,62 +87,66 @@ static cap_dynamic_queue* cap_dynamic_queue_init(){
 	return dynamic_queue;
 }
 
-static void cap_dynamic_queue_free(cap_dynamic_queue* dynamic_queue){
+static void cap_dynamic_queue_free(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
 	_cap_list_free(dynamic_queue->_internal_list);
 	free(dynamic_queue);
 }
 
-static void cap_dynamic_queue_deep_free(cap_dynamic_queue* dynamic_queue){
+static void cap_dynamic_queue_deep_free(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
 	_cap_list_deep_free(dynamic_queue->_internal_list);
 	free(dynamic_queue);
 }
 
-static size_t cap_dynamic_queue_size(const cap_dynamic_queue* dynamic_queue){
+static size_t cap_dynamic_queue_size(const cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
 	return dynamic_queue->_current_size;
 }
 
-static bool cap_dynamic_queue_push(cap_dynamic_queue* dynamic_queue, void* data){
+static bool cap_dynamic_queue_push(cap_dynamic_queue *dynamic_queue,
+				   void *data) {
 	assert((dynamic_queue != NULL) && (data != NULL));
-	bool return_val = _cap_list_push_front(dynamic_queue->_internal_list, data);
+	bool return_val =
+	    _cap_list_push_front(dynamic_queue->_internal_list, data);
 	dynamic_queue->_current_size++;
 	return return_val;
 }
 
-static void* cap_dynamic_queue_pop(cap_dynamic_queue* dynamic_queue){
+static void *cap_dynamic_queue_pop(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
-	if(dynamic_queue->_current_size <= 0) return NULL;
-	void* returner = _cap_list_pop_back(dynamic_queue->_internal_list);
+	if (dynamic_queue->_current_size <= 0) return NULL;
+	void *returner = _cap_list_pop_back(dynamic_queue->_internal_list);
 	dynamic_queue->_current_size--;
 	return returner;
 }
 
-static void* cap_dynamic_queue_front(cap_dynamic_queue* dynamic_queue){
+static void *cap_dynamic_queue_front(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
-	if(dynamic_queue->_current_size <= 0) return NULL;
+	if (dynamic_queue->_current_size <= 0) return NULL;
 	return _cap_list_back(dynamic_queue->_internal_list);
 }
 
-static void* cap_dynamic_queue_back(cap_dynamic_queue* dynamic_queue){
+static void *cap_dynamic_queue_back(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
 	return _cap_list_front(dynamic_queue->_internal_list);
 }
 
-static void cap_dynamic_queue_swap(cap_dynamic_queue* dynamic_queue_one, cap_dynamic_queue* dynamic_queue_two){
+static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
+				   cap_dynamic_queue *dynamic_queue_two) {
 	assert((dynamic_queue_one != NULL) && (dynamic_queue_two != NULL));
 	size_t one_size = dynamic_queue_one->_current_size;
-	_cap_list* one_tmp_internal_list = dynamic_queue_one->_internal_list;
-	dynamic_queue_one->_current_size = dynamic_queue_two->_current_size;		
+	_cap_list *one_tmp_internal_list = dynamic_queue_one->_internal_list;
+	dynamic_queue_one->_current_size = dynamic_queue_two->_current_size;
 	dynamic_queue_one->_internal_list = dynamic_queue_two->_internal_list;
 	dynamic_queue_two->_current_size = one_size;
 	dynamic_queue_two->_internal_list = one_tmp_internal_list;
 }
 
-static _cap_list* _cap_list_init(){
-	_cap_list_node* head_and_tail_nodes = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 2);
-	_cap_list* d_list = (_cap_list*) CAP_ALLOCATOR(_cap_list, 1);
+static _cap_list *_cap_list_init() {
+	_cap_list_node *head_and_tail_nodes =
+	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 2);
+	_cap_list *d_list = (_cap_list *)CAP_ALLOCATOR(_cap_list, 1);
 	d_list->_head_node = head_and_tail_nodes;
 	d_list->_tail_node = (head_and_tail_nodes + 1);
 	d_list->_head_node->data = NULL;
@@ -150,60 +158,63 @@ static _cap_list* _cap_list_init(){
 	return d_list;
 }
 
-static bool _cap_list_push_front(_cap_list* d_list, void* data){
+static bool _cap_list_push_front(_cap_list *d_list, void *data) {
 	assert((d_list != NULL) && (data != NULL));
-	_cap_list_node* new_node = (_cap_list_node*) CAP_ALLOCATOR(_cap_list_node, 1);
-	if(new_node == NULL) return false;
-	new_node->data = (CAP_GENERIC_TYPE_PTR) data;
+	_cap_list_node *new_node =
+	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
+	if (new_node == NULL) return false;
+	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	new_node->previous = d_list->_head_node;
-	_cap_list_node* tmp_head_next_holder = d_list->_head_node->next;
+	_cap_list_node *tmp_head_next_holder = d_list->_head_node->next;
 	d_list->_head_node->next = new_node;
 	new_node->next = tmp_head_next_holder;
 	tmp_head_next_holder->previous = new_node;
 	return true;
 }
 
-static void* _cap_list_pop_back(_cap_list* d_list){
+static void *_cap_list_pop_back(_cap_list *d_list) {
 	assert(d_list != NULL);
-	_cap_list_node* pop_node = d_list->_tail_node->previous;
+	_cap_list_node *pop_node = d_list->_tail_node->previous;
 	d_list->_tail_node->previous = pop_node->previous;
 	pop_node->previous->next = d_list->_tail_node;
 	return pop_node->data;
 }
 
-static void* _cap_list_front(const _cap_list* d_list){
+static void *_cap_list_front(const _cap_list *d_list) {
 	assert(d_list != NULL);
 	return d_list->_head_node->next->data;
 }
 
-static void* _cap_list_back(const _cap_list* d_list){
+static void *_cap_list_back(const _cap_list *d_list) {
 	assert(d_list != NULL);
 	return d_list->_tail_node->previous->data;
 }
 
-static void _cap_list_free(_cap_list* d_list){
+static void _cap_list_free(_cap_list *d_list) {
 	assert(d_list != NULL);
-	_cap_list_node* current_node = d_list->_head_node->next;
-	_cap_list_node* next_node;
+	_cap_list_node *current_node = d_list->_head_node->next;
+	_cap_list_node *next_node;
 	do {
 		next_node = current_node->next;
 		current_node->data = NULL;
-		if(current_node != NULL) free(current_node);
+		if (current_node != NULL) free(current_node);
 		current_node = next_node;
-	} while((current_node != NULL) && (current_node != d_list->_tail_node));
+	} while ((current_node != NULL) &&
+		 (current_node != d_list->_tail_node));
 	free(d_list->_head_node);
 }
 
-static void _cap_list_deep_free(_cap_list* d_list){
+static void _cap_list_deep_free(_cap_list *d_list) {
 	assert(d_list != NULL);
-	_cap_list_node* current_node = d_list->_head_node->next;
-	_cap_list_node* next_node;
+	_cap_list_node *current_node = d_list->_head_node->next;
+	_cap_list_node *next_node;
 	do {
 		next_node = current_node->next;
-		if(current_node->data != NULL) free(current_node->data);
-		if(current_node != NULL) free(current_node);
+		if (current_node->data != NULL) free(current_node->data);
+		if (current_node != NULL) free(current_node);
 		current_node = next_node;
-	} while((current_node != NULL) && (current_node != d_list->_tail_node));
+	} while ((current_node != NULL) &&
+		 (current_node != d_list->_tail_node));
 	free(d_list->_head_node);
 }
 
