@@ -28,6 +28,22 @@
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, num_elements) calloc(num_elements, sizeof(type))
 
+// Public APIs:
+typedef struct {
+
+} cap_lru_cache;
+
+cap_lru_cache *cap_lru_cache_init(size_t cache_size, size_t key_size);
+bool cap_lru_cache_contains(cap_lru_cache *, void *key);
+void *cap_lru_cache_lookup(cap_lru_cache *, void *key);
+bool *cap_lru_cache_erase(cap_lru_cache *, void *key);
+void cap_lru_cache_insert(cap_lru_cache *, void *key, void *value,
+			  size_t value_size);
+void *cap_lru_cache_front(cap_lru_cache *);
+void *cap_lru_cache_back(cap_lru_cache *);
+size_t cap_lru_cache_size(cap_lru_cache *);
+size_t cap_lru_cache_capacity(cap_lru_cache *);
+
 typedef struct _cap_list_node {
 	CAP_GENERIC_TYPE_PTR data;
 	CAP_GENERIC_TYPE_PTR key;
@@ -54,7 +70,7 @@ static void _cap_list_move_front(_cap_list *d_list,
 				 _cap_list_node *node_to_move);
 static void _cap_list_remove_this(_cap_list *d_list,
 				  _cap_list_node *node_to_remove);
-static void _cap_list_free_node(_cap_list_node*);
+static void _cap_list_free_node(_cap_list_node *);
 
 static _cap_list *_cap_list_init(size_t key_size) {
 	assert(key_size != 0);
@@ -126,17 +142,19 @@ static void _cap_list_move_front(_cap_list *d_list,
 	head_next->prev = node_to_move;
 }
 
-static void _cap_list_remove_this(_cap_list *d_list, _cap_list_node *node_to_remove){
+static void _cap_list_remove_this(_cap_list *d_list,
+				  _cap_list_node *node_to_remove) {
 	assert(d_list != NULL && node_to_remove != NULL);
 	node_to_remove->prev->next = node_to_remove->next;
 	node_to_remove->next->prev = node_to_remove->prev;
+	--d_list->_size;
 	_cap_list_free_node(node_to_remove);
 }
 
-static void _cap_list_free_node(_cap_list_node *node_to_free){
+static void _cap_list_free_node(_cap_list_node *node_to_free) {
 	assert(node_to_free != NULL);
-	if(node_to_free->data) free(node_to_free->data);
-	if(node_to_free->key) free(node_to_free->key);
+	if (node_to_free->data) free(node_to_free->data);
+	if (node_to_free->key) free(node_to_free->key);
 	free(node_to_free);
 }
 
