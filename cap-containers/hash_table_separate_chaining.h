@@ -81,7 +81,7 @@ static void cap_hash_table_deep_free(cap_hash_table *);
 static cap_hash_table *_cap_hash_table_rehash(cap_hash_table *);
 static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
 					    size_t key_size);
-size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
+static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
 
 // Linked list chain:
 // Init:
@@ -374,7 +374,7 @@ static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
 	return (memcmp(key_one, key_two, key_size) == 0);
 }
 
-size_t _hash_fn_default_hash(uint8_t *key, size_t key_size) {
+static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size) {
 	// Hash type: djb2
 	// Reference: http://www.cse.yorku.ca/~oz/hash.html
 	size_t hash = 5381;
