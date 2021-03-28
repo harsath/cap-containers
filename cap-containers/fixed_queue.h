@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_CHECK_NULL(value)                                                  \
 	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
@@ -51,26 +52,99 @@ typedef struct {
 	size_t _current_size;
 	_cap_list *_internal_list;
 } cap_fixed_queue;
+#endif
 
 // Prototypes (Public APIs)
 // Init:
-static cap_fixed_queue *cap_fixed_queue_init(size_t);
+/**
+ * Initilize a cap_fixed_queue object
+ *
+ * @param init_size Size of the fixed queue
+ * @return Dynamically allocated cap_fixed_queue container object
+ */
+static cap_fixed_queue *cap_fixed_queue_init(size_t init_size);
 
 // Lookup & Update:
-static size_t cap_fixed_queue_capacity(const cap_fixed_queue *);
-static size_t cap_fixed_queue_size(const cap_fixed_queue *);
-static size_t cap_fixed_queue_remaining_space(const cap_fixed_queue *);
-static bool cap_fixed_queue_push(cap_fixed_queue *, void *);
-static void *cap_fixed_queue_pop(cap_fixed_queue *);
-static void *cap_fixed_queue_front(cap_fixed_queue *);
-static void *cap_fixed_queue_back(cap_fixed_queue *);
+/**
+ * Query the capacity of the cap_fixed_queue container
+ *
+ * @param cap_fixed_queue container
+ * @return capacity of the container
+ */
+static size_t cap_fixed_queue_capacity(const cap_fixed_queue *queue);
+/**
+ * Query the size of the cap_fixed_queue container
+ *
+ * @param cap_fixed_queue container
+ * @return Current number of elements in the container
+ */
+static size_t cap_fixed_queue_size(const cap_fixed_queue *queue);
+/**
+ * Query the remaining size left in the queue
+ *
+ * @param queue cap_fixed_queue container
+ * @return Space left in the container
+ */
+static size_t cap_fixed_queue_remaining_space(const cap_fixed_queue *queue);
+/**
+ * Push an element onto the queue(User is totally responsible for lifetime of
+ * that pointer/element)
+ *
+ * @param queue cap_fixed_queue container
+ * @param item Element to be push onto the queue
+ * @return True if success, or else returns False(indicated queue is full or
+ * memory allocation error)
+ */
+static bool cap_fixed_queue_push(cap_fixed_queue *queue, void *item);
+/**
+ * Pop an element from the end of the queue
+ *
+ * @param queue cap_fixed_queue container
+ * @return Returns a pointer to the element, or returns NULL if queue is empty
+ */
+static void *cap_fixed_queue_pop(cap_fixed_queue *queue);
+/**
+ * Gives access to the front of the queue and does not modify the container
+ *
+ * @param queue cap_fixed_queue container
+ * @return Returns access to the element without poping the element or else
+ * returns NULL if queue is empty
+ */
+static void *cap_fixed_queue_front(cap_fixed_queue *queue);
+/**
+ * Gives access to the back of the queue and doesn't modify the container
+ *
+ * @param queue cap_fixed_queue container
+ * @return Returns access to the back of the container without modifying the
+ * container or returns NULL if queue is empty
+ */
+static void *cap_fixed_queue_back(cap_fixed_queue *queue);
+/**
+ * Swap two cap_fixed_queue object's internal elements
+ *
+ * @param fixed_queue_one First queue container
+ * @param fixed_queue_two Second queue container
+ */
 static void cap_fixed_queue_swap(cap_fixed_queue *fixed_queue_one,
 				 cap_fixed_queue *fixed_queue_two);
 
 // Memory:
-static void cap_fixed_queue_free(cap_fixed_queue *);
-static void cap_fixed_queue_deep_free(cap_fixed_queue *);
+/**
+ * Free the cap_fixed_queue container object without touching the elements which
+ * it contains.
+ *
+ * @param queue cap_fixed_queue container
+ */
+static void cap_fixed_queue_free(cap_fixed_queue *queue);
+/**
+ * Frees the cap_fixed_queue container object along with elements it
+ * container(assuming the elements are dynamically allocated)
+ *
+ * @param queue cap_fixed_queue container
+ */
+static void cap_fixed_queue_deep_free(cap_fixed_queue *queue);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Prototypes (Internal helpers)
 static _cap_list *_cap_list_init();
 static bool _cap_list_push_front(_cap_list *, void *);
@@ -79,6 +153,7 @@ static void *_cap_list_front(const _cap_list *);
 static void *_cap_list_back(const _cap_list *);
 static void _cap_list_deep_free(_cap_list *);
 static void _cap_list_free(_cap_list *);
+#endif
 
 static cap_fixed_queue *cap_fixed_queue_init(size_t initial_size) {
 	assert(initial_size > 0);

@@ -26,13 +26,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_CHECK_NULL(value)                                                  \
 	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
 	malloc(sizeof(type) * number_of_elements)
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Abstract types
 typedef struct _cap_list_node {
 	CAP_GENERIC_TYPE_PTR data;
@@ -45,30 +48,83 @@ typedef struct {
 	_cap_list_node *_head_node;
 	_cap_list_node *_tail_node;
 } _cap_list;
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
 typedef struct {
 	size_t _current_size;
 	_cap_list *_internal_list;
 } cap_dynamic_queue;
 
-// Prototypes (Public APIs)
-// Init:
+/**
+ * Initilize a cap_dynamic_queue object
+ *
+ * @return A dynamic queue container.
+ */
 static cap_dynamic_queue *cap_dynamic_queue_init();
 
-// Lookup & Update:
-static size_t cap_dynamic_queue_size(const cap_dynamic_queue *);
-static bool cap_dynamic_queue_push(cap_dynamic_queue *, void *);
-static void *cap_dynamic_queue_pop(cap_dynamic_queue *);
-static void *cap_dynamic_queue_front(cap_dynamic_queue *);
-static void *cap_dynamic_queue_back(cap_dynamic_queue *);
+/**
+ * Query size of the dynamic queue
+ *
+ * @param d_queue Takes a cap_dynamic_queue container object
+ * @return Size of the queue
+ */
+static size_t cap_dynamic_queue_size(const cap_dynamic_queue *d_queue);
+/**
+ * Push an element onto the queue
+ *
+ * @param d_queue Takes a cap_dynamic_queue container object
+ * @param item Element to push
+ * @return If success, returns <pre>true</pre>
+ */
+static bool cap_dynamic_queue_push(cap_dynamic_queue *d_queue, void *item);
+/**
+ * Pop the last element of the queue
+ *
+ * @param d_queue Takes cap_dynamic_queue container object
+ * @return Data of last item on the queue
+ */
+static void *cap_dynamic_queue_pop(cap_dynamic_queue *d_queue);
+/**
+ * Access the front of the queue but does not modify the queue.
+ *
+ * @param d_queue Takes cap_dynamic_queue container object
+ * @return Data of the front of the queue. Returns NULL if queue is empty
+ */
+static void *cap_dynamic_queue_front(cap_dynamic_queue *d_queue);
+/**
+ * Access the back of the queue but does not modify the queue.
+ *
+ * @param d_queue Takes cap_dynamic_queue container object
+ * @return Data of the back of the queue. Returns NULL if queue is empty
+ */
+static void *cap_dynamic_queue_back(cap_dynamic_queue *d_queue);
+/**
+ * Swap two cap_dynamic_queue container object's members
+ *
+ * @param dynamic_queue_one cap_dynamic_queue container one.
+ * @param dynamic_queue_two cap_dynamic_queue container two.
+ */
 static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
 				   cap_dynamic_queue *dynamic_queue_two);
 
 // Memory:
-static void cap_dynamic_queue_free(cap_dynamic_queue *);
-static void cap_dynamic_queue_deep_free(cap_dynamic_queue *);
+/**
+ * Frees the cap_dynamic_queue object and does not touch the elements/items
+ * inside the container.
+ *
+ * @param d_queue Takes cap_dynamic_queue container object.
+ */
+static void cap_dynamic_queue_free(cap_dynamic_queue *d_queue);
+/**
+ * Frees the cap_dynamic_queue object and also the elements inside the
+ * container, assuming the items are dynamically allocated
+ *
+ * @param d_queue Takes cap_dynamic_queue container object.
+ */
+static void cap_dynamic_queue_deep_free(cap_dynamic_queue *d_queue);
 
 // Prototypes (Internal helpers)
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 static _cap_list *_cap_list_init();
 static bool _cap_list_push_front(_cap_list *, void *);
 static void *_cap_list_pop_back(_cap_list *);
@@ -76,6 +132,7 @@ static void *_cap_list_front(const _cap_list *);
 static void *_cap_list_back(const _cap_list *);
 static void _cap_list_deep_free(_cap_list *);
 static void _cap_list_free(_cap_list *);
+#endif
 
 static cap_dynamic_queue *cap_dynamic_queue_init() {
 	cap_dynamic_queue *dynamic_queue =
