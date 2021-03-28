@@ -12,8 +12,7 @@ void test_hash_table_separate_chain(void){
 		int key_two = 2;
 		float value_two = 20.02f;
 		float value_one_replace = 11.11f;
-		bool insert_return = cap_hash_table_insert(hash_table, &key_one, &value_one);
-		CAP_ASSERT_TRUE(insert_return, "HASHTABLE_SP return value of insert");
+		cap_hash_table_insert(hash_table, &key_one, &value_one);
 		cap_hash_table_insert(hash_table, &key_two, &value_two);	
 		CAP_ASSERT_TRUE(*(float*)cap_hash_table_lookup(hash_table, &key_two) == value_two, "HASHTABLE_SP lookup after init with 2 items");
 		CAP_ASSERT_TRUE(*(float*)cap_hash_table_lookup(hash_table, &key_one) == value_one, "HASHTABLE_SP lookup key-one");
@@ -52,7 +51,7 @@ void test_hash_table_separate_chain(void){
 		CAP_ASSERT_FALSE(cap_hash_table_erase(hash_table, &key_four), "HASHTABLE_SP erase on removed key");
 		CAP_ASSERT_TRUE(*(float*)cap_hash_table_lookup(hash_table, &key_five) == value_five, "HASHTABLE_SP lookup before replace");
 		float new_value_five = 77.00f;
-		CAP_ASSERT_TRUE(cap_hash_table_insert(hash_table, &key_five, &new_value_five), "HASHTABLE_SP replacing the value for five");
+		cap_hash_table_insert(hash_table, &key_five, &new_value_five);
 		CAP_ASSERT_TRUE(*(float*)cap_hash_table_lookup(hash_table, &key_five) == new_value_five, "HASHTABLE_SP lookup after replace");
 		cap_hash_table_free(hash_table);
 	}

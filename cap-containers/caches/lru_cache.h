@@ -58,17 +58,18 @@ typedef struct {
 } cap_lru_cache;
 
 static cap_lru_cache *cap_lru_cache_init(size_t cache_size, size_t key_size);
-static bool cap_lru_cache_contains(cap_lru_cache *, void *key);
-static void *cap_lru_cache_lookup(cap_lru_cache *, void *key);
-static bool *cap_lru_cache_erase(cap_lru_cache *, void *key);
-static void cap_lru_cache_insert(cap_lru_cache *, void *key, void *value,
+static bool cap_lru_cache_contains(cap_lru_cache *cache, void *key);
+static void *cap_lru_cache_lookup(cap_lru_cache *cache, void *key);
+static bool cap_lru_cache_erase(cap_lru_cache *cache, void *key);
+static void cap_lru_cache_insert(cap_lru_cache *cache, void *key, void *value,
 				 size_t value_size);
-static void *cap_lru_cache_front(cap_lru_cache *);
-static void *cap_lru_cache_back(cap_lru_cache *);
-static size_t cap_lru_cache_size(cap_lru_cache *);
-static size_t cap_lru_cache_capacity(cap_lru_cache *);
+static void *cap_lru_cache_front(cap_lru_cache *cache);
+static void *cap_lru_cache_back(cap_lru_cache *cache);
+static size_t cap_lru_cache_size(cap_lru_cache *cache);
+static size_t cap_lru_cache_capacity(cap_lru_cache *cache);
 
 static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
+
 // Internal D-Linked list:
 static _cap_list *_cap_list_init(size_t key_size);
 static void _cap_list_push_front(_cap_list *d_list, void *key, void *data,
@@ -83,6 +84,41 @@ static void _cap_list_remove_this(_cap_list *d_list,
 				  _cap_list_node *node_to_remove);
 static void _cap_list_free_node(_cap_list_node *);
 
+static void cap_lru_cache_insert(cap_lru_cache *cache, void *key, void *value,
+				 size_t value_size) {
+	assert(cache != NULL && key != NULL && value != NULL &&
+	       value_size != 0);
+	size_t index =
+	    cache->_hash_fn((uint8_t *)key, cache->_d_list->_key_size) %
+	    cache->_capacity;
+	bool key_last_removed =
+	    false; // It's here because, if we just removed/poped the last item,
+		   // we don't want to allocate memory again.
+	if (cache->_d_list->_size >= cache->_capacity) {
+		_cap_list_node *pop_node = _cap_list_pop_back(cache->_d_list);
+		cache->_node_bucket[index].node_ptr = NULL;
+		--cache->_d_list->_size;
+		key_last_removed = true;
+	}
+	_cap_list_push_front(cache->_d_list, key, value, value_size);
+	cache->_node_bucket[index].node_ptr = _cap_list_front(cache->_d_list);
+	memcpy(cache->_node_bucket[index].key, key, cache->_d_list->_key_size);
+}
+
+static void *cap_lru_cache_front(cap_lru_cache *cache) {}
+
+// clang-format off
+static bool cap_lru_cache_erase(cap_lru_cache *cache, void *key){
+	assert(cache != NULL && key != NULL);
+	size_t index = cache->_hash_fn((uint8_t*)key, cache->_d_list->_key_size) % cache->_capacity;
+	if(memcmp(cache->_node_bucket[index].key, key, cache->_d_list->_key_size) != 0) return false;
+	_cap_list_remove_this(cache->_d_list, cache->_node_bucket[index].node_ptr);
+	cache->_node_bucket[index].node_ptr = NULL;
+	free(cache->_node_bucket[index].key);
+	return true;
+}
+// clang-format on
+
 static cap_lru_cache *cap_lru_cache_init(size_t cache_size, size_t key_size) {
 	assert(cache_size != 0 && key_size != 0);
 	cap_lru_cache *cache = (cap_lru_cache *)CAP_ALLOCATOR(cap_lru_cache, 1);
@@ -94,7 +130,9 @@ static cap_lru_cache *cap_lru_cache_init(size_t cache_size, size_t key_size) {
 	if (cache->_node_bucket == NULL) assert(false);
 	for (size_t i = 0; i < cache_size; ++i) {
 		cache->_node_bucket[i].node_ptr = NULL;
-		cache->_node_bucket[i].key = NULL;
+		cache->_node_bucket[i].key =
+		    (CAP_GENERIC_TYPE_PTR)CAP_ALLOCATOR(CAP_GENERIC_TYPE,
+							key_size);
 	}
 	cache->_hash_fn = _hash_fn_default_hash;
 	return cache;

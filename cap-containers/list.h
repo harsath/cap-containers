@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -47,24 +48,91 @@ typedef struct {
 	CAP_GENERIC_TYPE_PTR data;
 	_cap_list_node *current_node;
 } cap_list_iterator;
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
 // Prototypes (Public APIs)
-// Init:
+/**
+ * Initilize a cap_list container
+ *
+ * @return  Allocated cap_list container
+ */
 static cap_list *cap_list_init();
 
 // Lookup & Update:
-static void *cap_list_find_if(const cap_list *, bool (*)(void *));
-static bool cap_list_push_front(cap_list *, void *);
-static bool cap_list_push_back(cap_list *, void *);
-static void *cap_list_pop_front(cap_list *);
+/**
+ * Iterate the list and find the first occurance of the element which matches the predicate-function
+ *
+ * @param list cap_list container
+ * @param predicate_fn Predicate function where we will pass the elements(NULL is never passed into the predicate function)
+ * @return Returns the element which matches the first occurance of the predicate, if none matches, NULL is returned
+ */
+static void *cap_list_find_if(const cap_list *list, bool (*predicate_fn)(void *));
+/**
+ * Push an element at the front of the cap_list container
+ *
+ * @param list cap_list container
+ * @param item Element to push at the front of the list
+ * @return True if the operation is success, False if memory failur
+ */
+static bool cap_list_push_front(cap_list *list, void *item);
+/**
+ * Push an element at the end of the cap_list container
+ *
+ * @param list cap_list container
+ * @param item Element to push at the end of the list
+ * @return True if the operation is success, False if memory failur
+ */
+static bool cap_list_push_back(cap_list *list, void *item);
+/**
+ * Pop the element at the front of the cap_list container
+ *
+ * @param list cap_list container
+ * @return Returns the element if operation is success, returns NULL if cap_list container is empty
+ */
+static void *cap_list_pop_front(cap_list *list);
+/**
+ * Pop the element at the end of the cap_list container
+ *
+ * @param list cap_list container
+ * @return Returns the element if operation is success, returns NULL if cap_list container is empty
+ */
 static void *cap_list_pop_back(cap_list *);
-static void *cap_list_front(const cap_list *);
-static void *cap_list_back(const cap_list *);
-static bool cap_list_remove_if(cap_list *, bool (*)(void *));
+/**
+ * Gives access to the front of the cap_list without modifying the container
+ *
+ * @param list cap_list container
+ * @return Gives access to the front element of the cap_list container, returns NULL if the container is empty
+ */
+static void *cap_list_front(const cap_list *list);
+/**
+ * Gives access to the end of the cap_list without modifying the container
+ *
+ * @param list cap_list container
+ * @return Gives access to the element at the back of the cap_list container, returns NULL if the container is empty
+ */
+static void *cap_list_back(const cap_list *list);
+/**
+ * Iterates the cap_list container and remove all occurance of the element which matches the predicate function
+ *
+ * @param list cap_list container
+ * @param predicate_fn Predicate function which we pass the elements into, implementation ensures that predicate_fn will never gets a NULL as param.
+ * @return True if any element is removed, False if the given predicate_fn does not match any of the elements
+ */
+static bool cap_list_remove_if(cap_list *list, bool (*predicate_fn)(void *));
 
 // Memory:
-static void cap_list_deep_free(cap_list *);
-static void cap_list_free(cap_list *);
+/**
+ * Frees the cap_list container object and also frees the elements which it contains(assuming the elements are dynamically allocated)
+ *
+ * @param list cap_list container
+ */
+static void cap_list_deep_free(cap_list *list);
+/**
+ * Frees only the cap_list container object and does not touch the elements which it contains
+ *
+ * @param list cap_list container
+ */
+static void cap_list_free(cap_list *list);
 
 static cap_list *cap_list_init() {
 	_cap_list_node *head_and_tail_nodes =
