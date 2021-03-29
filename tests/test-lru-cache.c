@@ -92,4 +92,33 @@ void test_lru_cache(void){
 				"LRU_CACHE after_remove_this"
 		);
 	}
+
+	{
+		cap_lru_cache *cache = cap_lru_cache_init(3, sizeof(float));
+		int value_one = 10; int value_two = 20; int value_three = 30; int value_four = 40; int value_five = 50;
+		float key_one = 10.10f; float key_two = 20.20f; float key_three = 30.30f; float key_four = 40.40f; float key_five = 60.60f;
+		cap_lru_cache_insert(cache, &key_one, &value_one, sizeof(value_one));
+		cap_lru_cache_insert(cache, &key_two, &value_two, sizeof(value_two));
+		CAP_ASSERT_TRUE(_cast_value_int(cap_lru_cache_front(cache)) == value_two, "LRU_CACHE front after two items insert");
+		CAP_ASSERT_TRUE(_cast_value_int(cap_lru_cache_back(cache)) == value_one, "LRU_CACHE back after two items insert");
+		CAP_ASSERT_TRUE(cap_lru_cache_capacity(cache) == 3, "LRU_CACHE capacity");
+		CAP_ASSERT_TRUE(cap_lru_cache_size(cache) == 2, "LRU_CACHE size");
+		cap_lru_cache_insert(cache, &key_three, &value_three, sizeof(value_three));
+		cap_lru_cache_insert(cache, &key_four, &value_four, sizeof(value_four));
+		CAP_ASSERT_TRUE(_cast_value_int(cap_lru_cache_front(cache)) == value_four &&
+				_cast_value_int(cap_lru_cache_back(cache)) == value_two &&
+				cap_lru_cache_size(cache) == 3, "LRU_CACHE front, back, linked_list size after pop-off LRU");
+		CAP_ASSERT_TRUE(cap_lru_cache_contains(cache, &key_four), "LRU_CACHE contains on valid key");
+		CAP_ASSERT_FALSE(cap_lru_cache_contains(cache, &key_one), "LRU_CACHE contains on invalid/removed key");
+		CAP_ASSERT_TRUE(
+				_cast_value_int(cache->_d_list->_head_node->next->data) == value_four &&
+				_cast_value_int(cache->_d_list->_head_node->next->next->data) == value_three &&
+				_cast_value_int(cache->_d_list->_head_node->next->next->next->data) == value_two &&
+				cache->_d_list->_head_node->next->next->next->next->data == NULL &&
+				cache->_d_list->_head_node->next->next->next->next == cache->_d_list->_tail_node,
+				"LRU_CACHE manual linked list check"
+		);
+		/* CAP_ASSERT_TRUE(cap_lru_cache_erase(cache, &key_four) && */
+		/* 		cap_lru_cache_size(cache) == 2, "LRU_CACHE erase and size check"); */
+	}
 }

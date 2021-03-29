@@ -67,6 +67,8 @@ static void *cap_lru_cache_front(cap_lru_cache *cache);
 static void *cap_lru_cache_back(cap_lru_cache *cache);
 static size_t cap_lru_cache_size(cap_lru_cache *cache);
 static size_t cap_lru_cache_capacity(cap_lru_cache *cache);
+static void cap_lru_cache_clear(cap_lru_cache *cache);
+static void cap_lru_cache_free(cap_lru_cache *cache);
 
 static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
 
@@ -83,38 +85,101 @@ static void _cap_list_move_front(_cap_list *d_list,
 static void _cap_list_remove_this(_cap_list *d_list,
 				  _cap_list_node *node_to_remove);
 static void _cap_list_free_node(_cap_list_node *);
-
+static void _cap_list_free_entries(_cap_list *);
+static void _cap_list_free(_cap_list *);
+#include <stdio.h>
+// clang-format off
 static void cap_lru_cache_insert(cap_lru_cache *cache, void *key, void *value,
 				 size_t value_size) {
 	assert(cache != NULL && key != NULL && value != NULL &&
 	       value_size != 0);
 	size_t index =
-	    cache->_hash_fn((uint8_t *)key, cache->_d_list->_key_size) %
-	    cache->_capacity;
-	bool key_last_removed =
-	    false; // It's here because, if we just removed/poped the last item,
-		   // we don't want to allocate memory again.
+	    cache->_hash_fn((uint8_t *)key, cache->_d_list->_key_size) % cache->_capacity;
 	if (cache->_d_list->_size >= cache->_capacity) {
-		_cap_list_node *pop_node = _cap_list_pop_back(cache->_d_list);
+		_cap_list_pop_back(cache->_d_list);
 		cache->_node_bucket[index].node_ptr = NULL;
-		--cache->_d_list->_size;
-		key_last_removed = true;
 	}
 	_cap_list_push_front(cache->_d_list, key, value, value_size);
 	cache->_node_bucket[index].node_ptr = _cap_list_front(cache->_d_list);
 	memcpy(cache->_node_bucket[index].key, key, cache->_d_list->_key_size);
 }
+// clang-format on
 
-static void *cap_lru_cache_front(cap_lru_cache *cache) {}
+static void cap_lru_cache_clear(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	_cap_list_free_entries(cache->_d_list);
+	for (size_t i = 0; i < cache->_capacity; i++)
+		cache->_node_bucket[i].node_ptr = NULL;
+}
+
+static void cap_lru_cache_free(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	for (size_t i = 0; i < cache->_capacity; ++i) {
+		free(cache->_node_bucket[i].key);
+	}
+	free(cache->_node_bucket);
+	_cap_list_free(cache->_d_list);
+	free(cache);
+}
+
+static void _cap_list_free_entries(_cap_list *list) {
+	assert(list != NULL);
+	_cap_list_node *current_node = list->_head_node->next;
+	do {
+		if (current_node->data != NULL && current_node->key != NULL) {
+			free(current_node->data);
+			free(current_node->key);
+		}
+		current_node = current_node->next;
+		--list->_size;
+	} while (current_node != list->_tail_node && current_node != NULL);
+}
+
+static void _cap_list_free(_cap_list *list) {
+	assert(list != NULL);
+	_cap_list_node *current_node = list->_head_node->next;
+	do {
+		if (current_node->data != NULL && current_node->key != NULL) {
+			free(current_node->data);
+			free(current_node->key);
+		}
+	} while (current_node != list->_tail_node && current_node != NULL);
+	free(list->_head_node);
+	free(list);
+}
+
+static size_t cap_lru_cache_size(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	return cache->_d_list->_size;
+}
+
+static size_t cap_lru_cache_capacity(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	return cache->_capacity;
+}
+
+static void *cap_lru_cache_front(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	if (cache->_d_list->_head_node->next != NULL)
+		return cache->_d_list->_head_node->next->data;
+	return NULL;
+}
+
+static void *cap_lru_cache_back(cap_lru_cache *cache) {
+	assert(cache != NULL);
+	if (cache->_d_list->_tail_node->prev != NULL)
+		return cache->_d_list->_tail_node->prev->data;
+	return NULL;
+}
 
 // clang-format off
 static bool cap_lru_cache_erase(cap_lru_cache *cache, void *key){
 	assert(cache != NULL && key != NULL);
 	size_t index = cache->_hash_fn((uint8_t*)key, cache->_d_list->_key_size) % cache->_capacity;
-	if(memcmp(cache->_node_bucket[index].key, key, cache->_d_list->_key_size) != 0) return false;
+	if(memcmp(cache->_node_bucket[index].key, key, cache->_d_list->_key_size) != 0 &&
+			cache->_node_bucket[index].node_ptr == NULL) return false;
 	_cap_list_remove_this(cache->_d_list, cache->_node_bucket[index].node_ptr);
 	cache->_node_bucket[index].node_ptr = NULL;
-	free(cache->_node_bucket[index].key);
 	return true;
 }
 // clang-format on
@@ -241,10 +306,14 @@ static void _cap_list_move_front(_cap_list *d_list,
 	node_to_move->next = head_next;
 	head_next->prev = node_to_move;
 }
-
+#include <stdio.h>
+// [1] <-> [2] <-> [3]
 static void _cap_list_remove_this(_cap_list *d_list,
 				  _cap_list_node *node_to_remove) {
 	assert(d_list != NULL && node_to_remove != NULL);
+	if(node_to_remove->prev == NULL){
+		printf("NULL NULL!!\n");
+	}
 	node_to_remove->prev->next = node_to_remove->next;
 	node_to_remove->next->prev = node_to_remove->prev;
 	--d_list->_size;
