@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_CHECK_NULL(value)                                                  \
 	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
@@ -45,57 +46,311 @@ typedef struct {
 	size_t _current_index;
 	void *data;
 } cap_vector_iterator;
-
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 // Prototypes (Public APIs)
 // Init:
-static cap_vector *cap_vector_init(size_t);
-static cap_vector_iterator *cap_vector_iterator_init(cap_vector *);
+/**
+ * Initilize a cap_vector with some size(like std::vector::reserved)
+ *
+ * @param init_size Initial size
+ * @return Allocated cap_vector container
+ */
+static cap_vector *cap_vector_init(size_t init_size);
+/**
+ * Initilize an Iterator object for iterating over a cap_vector container
+ *
+ * @param vector cap_vector container for which we need to create a iterator
+ * @return Allocated cap_vector_iterator object for iterating the container
+ * which is given in the parameter
+ */
+static cap_vector_iterator *cap_vector_iterator_init(cap_vector *vector);
 
 // Lookup & Update:
-static void *cap_vector_at(cap_vector *, size_t);
-static void cap_vector_clear(cap_vector *);
+/**
+ * Return the element on the cap_vector container the the specific index
+ *
+ * @param vector cap_vector container
+ * @param index The index value to get the element
+ * @return Element at the index, if the index is larget then the number of
+ * elements or the cap_vector container is empty, it returns NULL
+ */
+static void *cap_vector_at(cap_vector *vector, size_t index);
+/**
+ * Pop the element at the front of the cap_vector container
+ *
+ * This operation might hurt performance, since this involves moving every item
+ * from index 1 to index N
+ * @param vector cap_vector container
+ * @return First element, which is poped
+ */
 static void *cap_vector_pop_front(cap_vector *vector);
-static cap_vector *cap_vector_copy(cap_vector *);
-static cap_vector *cap_vector_deep_copy(cap_vector *);
-static void *cap_vector_front(cap_vector *);
-static void *cap_vector_back(cap_vector *);
-static bool cap_vector_push_back(cap_vector *, void *);
-static void *cap_vector_pop_back(cap_vector *);
-static void cap_vector_swap(cap_vector *, cap_vector *);
-static void *cap_vector_find_if(cap_vector *, bool (*)(void *));
-static bool cap_vector_remove_if(cap_vector *, bool (*)(void *));
-static void cap_vector_for_each(cap_vector *, void (*)(void *));
+/**
+ * Copy the element's pointers but not the underlying element itself.
+ *
+ * This operation will result in a cap_vector container which will point to the
+ * same underlying elements
+ * @param vector cap_vector container to copy from
+ * @return New cap_vector container which will point to the same underlying
+ * elements(like an alias)
+ */
+static cap_vector *cap_vector_copy(cap_vector *vector);
+/**
+ * This operation will copy the elements to a new cap_vector container and also
+ * copies the underlying element's representation and does not point to the same
+ * underlying elements but it's own version of the element's pointers.
+ *
+ * @param vector cap_vector container
+ * @return New cap_vector with underlying pointer not pointing to same elements
+ * but it's own copy
+ */
+static cap_vector *cap_vector_deep_copy(cap_vector *vector);
+/**
+ * Access the front element of the cap_vector container
+ *
+ * @param vector cap_vector container
+ * @return Returns the first element of the container, if the container is
+ * empty, it returns NULL
+ */
+static void *cap_vector_front(cap_vector *vector);
+/**
+ * Access the back element of the cap_vector container
+ *
+ * @param vector cap_vector container
+ * @return Returns the back/last element of the container, if the container is
+ * empty, it returns NULL
+ */
+static void *cap_vector_back(cap_vector *vector);
+/**
+ * Push an element at the back of the container.
+ *
+ * If the cap_vector container reaches it's capacity, the container gets resized
+ * with order <b>2 * CURRENT-CAPACITY</b> and moves all the elements, same as
+ * std::vector. If there is any error when allocating space for the new memory
+ * capacity, the current state of the container is preserved and returns False
+ * indicating that a memory error has occured and a user should handle that
+ * effectively
+ * @param vector cap_vector container
+ * @param item Element to push back onto the container
+ * @return Returns True if the operation is success, returns False if a memory
+ * error occured in such a case, the current state of the container is preserved
+ */
+static bool cap_vector_push_back(cap_vector *vector, void *item);
+/**
+ * Pop an element at the back of the container
+ *
+ * @param vector cap_vector container
+ * @return Last element of the container, returns NULL if the container is empty
+ */
+static void *cap_vector_pop_back(cap_vector *vector);
+/**
+ * Swap two cap_vector container's internal members
+ *
+ * @param vector_one First cap_vector container
+ * @param vector_two Second cap_vector container
+ */
+static void cap_vector_swap(cap_vector *vector_one, cap_vector *vector_two);
+/**
+ * Find the first occurance of the element which matches the given predicate
+ * function. Implementations ensures that NULL will never be passed into the
+ * predicate function
+ *
+ * @param vector cap_vector container
+ * @param predicate_fn Predicate function where we pass the items and check the
+ * boolean return
+ * @return Returns the first occurance of the item which matches the
+ * predicate_fn, if none matches, NULL is returned
+ */
+static void *cap_vector_find_if(cap_vector *vector,
+				bool (*predicate_fn)(void *));
+/**
+ * Remove all the occurance of the elements which matches the given predicate in
+ * the container
+ *
+ * @param vector cap_vector container
+ * @param predicate_fn Predicate function to check against
+ * @return True if any element is removed, False if none of the elements matches
+ * the predicate_fn and none is removed
+ */
+static bool cap_vector_remove_if(cap_vector *vector,
+				 bool (*predicate_fn)(void *));
+/**
+ * Pass all the elements from the container into a function.
+ *
+ * Typical usage is assumed to use this to do something for every item of the
+ * container since we iterate over the container by passing all elements into
+ * the fn_ptr function
+ * @param vector cap_vector container
+ * @param fn_ptr function to which we need to pass the elements as we iterate
+ */
+static void cap_vector_for_each(cap_vector *vector, void (*fn_ptr)(void *));
 
 // Memory:
-static bool cap_vector_resize(cap_vector *, size_t);
-static bool cap_vector_shrink_to_fit(cap_vector *);
-static void cap_vector_free(cap_vector *);
-static void cap_vector_deep_free(cap_vector *);
+/**
+ * Resize the cap_vector container to the given size(just list
+ * std::vector::resize)
+ *
+ * @param vector cap_vector container
+ * @param resize Size to resize the container to.
+ * @param True if the operation is success, False if there is a memory error(in
+ * which the case, the use has to handle that effectively). But the result of a
+ * memory error doesn't modify teh current state of the container
+ */
+static bool cap_vector_resize(cap_vector *vector, size_t resize);
+/**
+ * Shrink the capacity of the cap_vector container to the current size/number of
+ * elements on the container. Just like std::vector::shrink_to_fit operation
+ *
+ * @param vector cap_vector container
+ * @param True if the operation is success, False if there is a memory error(in
+ * which the case, the use has to handle that effectively). But the result of a
+ * memory error doesn't modify teh current state of the container
+ */
+static bool cap_vector_shrink_to_fit(cap_vector *vector);
+/**
+ * Free the cap_vector container object and doesn't touch the underlying
+ * elements which it contains.
+ *
+ * @param vector cap_vector container to be freed
+ */
+static void cap_vector_free(cap_vector *vector);
+/**
+ * Free the cap_vector container and also the underlying elements(assuming the
+ * items are dynamically allocated)
+ *
+ * @param vector cap_vector container
+ */
+static void cap_vector_deep_free(cap_vector *vector);
 
 // Checks:
-static size_t cap_vector_size(cap_vector *);
-static size_t cap_vector_capacity(cap_vector *);
-static bool cap_vector_empty(cap_vector *);
-static size_t cap_vector_remaining_space(cap_vector *);
+/**
+ * Query the size of the container
+ *
+ * @param vector cap_vector container
+ * @return size of the container/number of elements
+ */
+static size_t cap_vector_size(cap_vector *vector);
+/**
+ * Query the current capacity of the cap_vector container
+ *
+ * @param vector cap_vector container
+ * @return capacity of the container
+ */
+static size_t cap_vector_capacity(cap_vector *vector);
+/**
+ * Query if the container is empty or not
+ *
+ * @param vector cap_vector container
+ * @return True if container is empty, False if not.
+ */
+static bool cap_vector_empty(cap_vector *vector);
+/**
+ * Query for the remaining space left in the container before it gets resized
+ * into <b>2 * CURRENT-CAPACITY</b>
+ *
+ * @param vector cap_vector container
+ * @return Remaining space in the container.
+ */
+static size_t cap_vector_remaining_space(cap_vector *vector);
 
 // Iterator:
-static void cap_vector_iterator_insert(cap_vector_iterator *, void *);
-static void cap_vector_iterator_remove(cap_vector_iterator *);
-static void cap_vector_iterator_increment(cap_vector_iterator *);
-static void cap_vector_iterator_decrement(cap_vector_iterator *);
-static void *cap_vector_iterator_next(cap_vector_iterator *);
-static void *cap_vector_iterator_previous(cap_vector_iterator *);
-static bool cap_vector_iterator_equals(cap_vector_iterator *,
-				       cap_vector_iterator *);
-static bool cap_vector_iterator_equals_predicate(cap_vector_iterator *,
-						 bool (*)(void *));
-static size_t cap_vector_iterator_index(cap_vector_iterator *);
-static cap_vector_iterator *cap_vector_begin(cap_vector *);
-static cap_vector_iterator *cap_vector_end(cap_vector *);
-static void cap_vector_iterator_free(cap_vector_iterator *);
+/**
+ * Insert an item at the current position of the Iterator(ie replaces the item
+ * at it's place)
+ *
+ * @param iterator cap_vector_iterator iterator object
+ * @param item Element to replace.
+ */
+static void cap_vector_iterator_insert(cap_vector_iterator *iterator,
+				       void *item);
+/**
+ * Remove the element at the current position of the Iterator
+ *
+ * @param iterator cap_vector_iterator iterator object
+ */
+static void cap_vector_iterator_remove(cap_vector_iterator *iterator);
+/**
+ * Increment the Iterator to the next element on the container
+ *
+ * @param iterator cap_vector_iterator iterator object
+ */
+static void cap_vector_iterator_increment(cap_vector_iterator *iterator);
+/**
+ * Decrement the Iterator object to the previous element on the container
+ *
+ * @param iterator cap_vector_iterator iterator object
+ */
+static void cap_vector_iterator_decrement(cap_vector_iterator *iterator);
+/**
+ * Peek into the next element of the container without incrementing the iterator
+ *
+ * @param iterator cap_vector_iterator iterator object
+ * @return Next element of the container, if the iterator is at the last
+ * element, it returns NULL
+ */
+static void *cap_vector_iterator_next(cap_vector_iterator *iterator);
+/**
+ * Peek into the previous element of the container without decrementing the
+ * iterator
+ *
+ * @param iterator cap_vector_iterator iterator object
+ * @return Previous element of the container, if the iterator is at the first
+ * element, it returns NULL
+ */
+static void *cap_vector_iterator_previous(cap_vector_iterator *iterator);
+/**
+ * Check if two elements which pointed by the iterators are same
+ *
+ * @param iter_one First iterator
+ * @param iter_two Secound iterator
+ */
+static bool cap_vector_iterator_equals(cap_vector_iterator *iter_one,
+				       cap_vector_iterator *iter_two);
+/**
+ * Check if an element which is pointed by the iterator matches the given
+ * predicate function
+ *
+ * @param iterator cap_vector_iterator iterator object
+ * @param predicate_fn Predicate function
+ * @return Returns True, if predicate_fn says so, if not returns False.
+ */
+static bool cap_vector_iterator_equals_predicate(cap_vector_iterator *iterator,
+						 bool (*predicate_fn)(void *));
+/**
+ * Get index of the element where the current iterator points to
+ *
+ * @param iterator cap_vector_iterator iterator
+ * @return Index of the element pointed by the cap_vector_iterator object
+ */
+static size_t cap_vector_iterator_index(cap_vector_iterator *iterator);
+/**
+ * Get an iterator to the start of a cap_vector container
+ *
+ * @param vector cap_vector container
+ * @return Allocated cap_vector_iterator iterator which points to the first
+ * element of the container
+ */
+static cap_vector_iterator *cap_vector_begin(cap_vector *vector);
+/**
+ * Get an iterator to the last element of the cap_vector container
+ *
+ * @param vector cap_vector container
+ * @return Allocated cap_vector_iterator iterator which points to the last
+ * element of the container
+ */
+static cap_vector_iterator *cap_vector_end(cap_vector *vector);
+/**
+ * Free the cap_vector_iterator iterator object. This operation doesn't free the
+ * underlying element which this iterator points to but only the
+ * cap_vector_iterator object
+ *
+ * @param iterator cap_vector_iterator iterator object to be freed
+ */
+static void cap_vector_iterator_free(cap_vector_iterator *iterator);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Prototypes (Internal helpers)
 static bool _cap_vector_reserve(cap_vector *, size_t);
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
 // Implementations:
 static cap_vector *cap_vector_init(size_t initial_size) {
