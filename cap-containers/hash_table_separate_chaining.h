@@ -1,5 +1,5 @@
 // cap-containers for pure C
-// Copyright © 2021 Harsath
+// Copyright © 2021 Harsath <harsath@tuta.io>
 // The software is licensed under the MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_DEFAULT_HASHTABLE_MAX_LOAD_FACTOR 1
 #define CAP_HASHTABLE_LOAD_FACTOR(hash_table_ptr)                              \
 	(hash_table_ptr->size == hash_table_ptr->capacity)
@@ -56,32 +57,126 @@ typedef struct {
 	size_t (*hash_fn)(uint8_t *key, size_t key_size);
 	_cap_ll_chain *_hash_buckets;
 } cap_hash_table;
+#endif
 
 // Prototypes(Public APIs)
-// Init:
+/**
+ * Initilize a cap_hash_table container with specified initial-capacity and
+ * key-key
+ *
+ * @param key_size Key-size for the cap_hash_table container
+ * @param init_capacity Initial bucket capacity for the cap_hash_table container
+ * @return Allocated cap_hash_table container
+ */
 static cap_hash_table *cap_hash_table_init(size_t key_size,
 					   size_t init_capacity);
 
 // Lookup & Update:
+/**
+ * Check if an element with the given key contains within cap_hash_table
+ * container
+ *
+ * @param table cap_hash_table container
+ * @param key Key to check against
+ * @return Returns True if an element is contained within the cap_hash_table
+ * with the given key
+ */
 static bool cap_hash_table_contains(cap_hash_table *table, void *key);
-static bool cap_hash_table_insert(cap_hash_table *table, void *key,
+/**
+ * Insert an element onto the hash table O(1) operation
+ *
+ * If the elements already exists in the bucket the key gets hash into, we use
+ * separate-chaining for collision resolution i.e we use linked list
+ * @param table cap_hash_table container
+ * @param key Key for element to be inserted into the hash-table
+ * @param value Item to be inserted into the hash table
+ */
+static void cap_hash_table_insert(cap_hash_table *table, void *key,
 				  void *value);
+/**
+ * Lookup an element in the cap_hash_table container O(1) operation
+ *
+ * @param table cap_hash_table container
+ * @param key Key for the lookup operation
+ * @return Returns the element if there is an element on the bucker where the
+ * key gets hash into, if there is no elements(bucket is empty), returns NULL
+ */
 static void *cap_hash_table_lookup(cap_hash_table *table, void *key);
-static bool cap_hash_table_erase(cap_hash_table *, void *key);
+/**
+ * Erase/remove an element from the cap_hash_table container which have the give
+ * key O(1) operation
+ *
+ * @param table cap_hash_table container
+ * @param key Key for the element to be erased/removed
+ * @return Returns True if there is a valid element on the bucket where the key
+ * gets hash into and removed the element successfully, if not returns False
+ */
+static bool cap_hash_table_erase(cap_hash_table *table, void *key);
+/**
+ * Erase/remove an element and also free() the element O(1) operation as far as
+ * the container goes
+ *
+ * @param table cap_hash_table container
+ * @param key Key for the element to be removed from the hash-table and freed.
+ * @return Returns True if there is a valid element on the bucket where the key
+ * gets hash into and removed(and freed) the element successfully, if not
+ * returns False
+ */
 static bool cap_hash_table_deep_erase(cap_hash_table *, void *key);
+/**
+ * Query if the element is empty
+ *
+ * @param table cap_hash_table container
+ * @return Returns True if the cap_hash_table container is empty, or else
+ * returns False
+ */
 static bool cap_hash_table_empty(cap_hash_table *);
-static void cap_hash_table_swap(cap_hash_table *, cap_hash_table *);
-static size_t cap_hash_table_bucket_size(cap_hash_table *);
-static size_t cap_hash_table_size(cap_hash_table *);
-static void cap_hash_table_free(cap_hash_table *);
-static void cap_hash_table_deep_free(cap_hash_table *);
+/**
+ * Swap two cap_hash_table container object's internal members
+ *
+ * @param table_one First cap_hash_table container
+ * @param table_two Second cap_hash_table container
+ */
+static void cap_hash_table_swap(cap_hash_table *table_one,
+				cap_hash_table *table_two);
+/**
+ * Query the size/number of buckets the cap_hash_table container contains at
+ * present.
+ *
+ * @param table cap_hash_table container
+ * @return Size of the cap_hash_table buckets
+ */
+static size_t cap_hash_table_bucket_size(cap_hash_table *table);
+/**
+ * Query the size/number of elements the cap_hash_table container contains at
+ * present.
+ *
+ * @param table cap_hash_table container
+ * @return Size of the cap_hash_table container
+ */
+static size_t cap_hash_table_size(cap_hash_table *table);
+/**
+ * Frees the cap_hash_table container and doesn't touch the underlying elements
+ * which the hash-table contains
+ *
+ * @param table cap_hash_table container
+ */
+static void cap_hash_table_free(cap_hash_table *table);
+/**
+ * Frees the cap_hash_table container and also the underlying elements which the
+ * hash-table contains(assyming the elements are dynamically allocated)
+ *
+ * @param table cap_hash_table container
+ */
+static void cap_hash_table_deep_free(cap_hash_table *table);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 // Prototypes(Internal helpers)
 // Hash table:
 static cap_hash_table *_cap_hash_table_rehash(cap_hash_table *);
 static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
 					    size_t key_size);
-size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
+static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
 
 // Linked list chain:
 // Init:
@@ -99,6 +194,7 @@ static size_t _cap_ll_chain_size(_cap_ll_chain *);
 // Memory:
 static void _cap_ll_chain_free(_cap_ll_chain *);
 static void _cap_ll_chain_deep_free(_cap_ll_chain *);
+#endif
 
 static cap_hash_table *
 _cap_hash_table_rehash(cap_hash_table *hash_table_original) {
@@ -195,7 +291,7 @@ static void *cap_hash_table_lookup(cap_hash_table *hash_table, void *key) {
 	return find_if_key->data;
 }
 
-static bool cap_hash_table_insert(cap_hash_table *hash_table, void *key,
+static void cap_hash_table_insert(cap_hash_table *hash_table, void *key,
 				  void *value) {
 	assert(hash_table != NULL && key != NULL && value != NULL);
 	if (CAP_HASHTABLE_LOAD_FACTOR(hash_table)) {
@@ -211,12 +307,10 @@ static bool cap_hash_table_insert(cap_hash_table *hash_table, void *key,
 	    &hash_table->_hash_buckets[key_index], key, hash_table->key_size);
 	if (find_if_key != NULL) {
 		find_if_key->data = (CAP_GENERIC_TYPE_PTR)value;
-		return true;
 	}
 	_cap_ll_chain_push_front(&hash_table->_hash_buckets[key_index], key,
 				 hash_table->key_size, value);
-	hash_table->size++;
-	return true;
+	if(find_if_key == NULL) hash_table->size++;
 }
 
 static bool cap_hash_table_contains(cap_hash_table *hash_table, void *key) {
@@ -374,7 +468,7 @@ static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
 	return (memcmp(key_one, key_two, key_size) == 0);
 }
 
-size_t _hash_fn_default_hash(uint8_t *key, size_t key_size) {
+static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size) {
 	// Hash type: djb2
 	// Reference: http://www.cse.yorku.ca/~oz/hash.html
 	size_t hash = 5381;

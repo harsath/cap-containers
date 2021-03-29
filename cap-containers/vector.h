@@ -1,5 +1,5 @@
 // cap-containers for pure C
-// Copyright © 2021 Harsath
+// Copyright © 2021 Harsath <harsath@tuta.io>
 // The software is licensed under the MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining
