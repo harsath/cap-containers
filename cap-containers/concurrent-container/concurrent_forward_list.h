@@ -211,10 +211,11 @@ static void *cap_forward_list_front(cap_forward_list *f_list) {
 	int ret = pthread_mutex_lock(&f_list->_forward_list_mtx);
 	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
 	void *return_value;
-	if (f_list->head == NULL)
+	if (f_list->head == NULL) {
 		return_value = NULL;
-	else
+	} else {
 		return_value = f_list->head->data;
+	}
 	ret = pthread_mutex_unlock(&f_list->_forward_list_mtx);
 	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
 	return return_value;
