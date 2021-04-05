@@ -19,8 +19,8 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef CAP_FIXED_QUEUE_H
-#define CAP_FIXED_QUEUE_H
+#ifndef CAP_CONCURRENT_FIXED_QUEUE_H
+#define CAP_CONCURRENT_FIXED_QUEUE_H
 #include <assert.h>
 #include <pthread.h>
 #include <stdbool.h>
@@ -395,4 +395,4 @@ static void _cap_list_deep_free(_cap_list *d_list) {
 	free(d_list->_head_node);
 }
 
-#endif // !CAP_FIXED_QUEUE_H
+#endif // !CAP_CONCURRENT_FIXED_QUEUE_H
