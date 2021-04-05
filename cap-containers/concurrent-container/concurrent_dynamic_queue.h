@@ -122,14 +122,6 @@ static void *cap_dynamic_queue_front(cap_dynamic_queue *d_queue);
  * @return Data of the back of the queue. Returns NULL if queue is empty
  */
 static void *cap_dynamic_queue_back(cap_dynamic_queue *d_queue);
-/**
- * Swap two cap_dynamic_queue container object's members
- *
- * @param dynamic_queue_one cap_dynamic_queue container one.
- * @param dynamic_queue_two cap_dynamic_queue container two.
- */
-static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
-				   cap_dynamic_queue *dynamic_queue_two);
 
 // Memory:
 /**
@@ -252,25 +244,6 @@ static void *cap_dynamic_queue_back(cap_dynamic_queue *dynamic_queue) {
 	ret = pthread_mutex_unlock(&dynamic_queue->_dynamic_queue_mtx);
 	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
 	return return_value;
-}
-
-static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
-				   cap_dynamic_queue *dynamic_queue_two) {
-	assert((dynamic_queue_one != NULL) && (dynamic_queue_two != NULL));
-	int ret = pthread_mutex_lock(&dynamic_queue_one->_dynamic_queue_mtx);
-	int ret2 = pthread_mutex_lock(&dynamic_queue_two->_dynamic_queue_mtx);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret2);
-	size_t one_size = dynamic_queue_one->_current_size;
-	_cap_list *one_tmp_internal_list = dynamic_queue_one->_internal_list;
-	dynamic_queue_one->_current_size = dynamic_queue_two->_current_size;
-	dynamic_queue_one->_internal_list = dynamic_queue_two->_internal_list;
-	dynamic_queue_two->_current_size = one_size;
-	dynamic_queue_two->_internal_list = one_tmp_internal_list;
-	ret = pthread_mutex_unlock(&dynamic_queue_one->_dynamic_queue_mtx);
-	ret2 = pthread_mutex_unlock(&dynamic_queue_two->_dynamic_queue_mtx);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret2);
 }
 
 static _cap_list *_cap_list_init() {
