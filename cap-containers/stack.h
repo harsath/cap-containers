@@ -114,26 +114,32 @@ static cap_stack *cap_stack_init() {
 }
 
 static bool cap_stack_push(cap_stack *stack, void *data) {
+	assert(stack != NULL && data != NULL);
 	return _cap_vector_push_back(stack->_internal_container, data);
 }
 
 static void *cap_stack_pop(cap_stack *stack) {
+	assert(stack != NULL);
 	return _cap_vector_pop_back(stack->_internal_container);
 }
 
 static void *cap_stack_top(cap_stack *stack) {
+	assert(stack != NULL);
 	return _cap_vector_back(stack->_internal_container);
 }
 
 static size_t cap_stack_size(cap_stack *stack) {
+	assert(stack != NULL);
 	return stack->_internal_container->_size;
 }
 
 static bool cap_stack_empty(cap_stack *stack) {
+	assert(stack != NULL);
 	return (stack->_internal_container->_size == 0);
 }
 
 static void cap_stack_swap(cap_stack *stack_one, cap_stack *stack_two) {
+	assert(stack_one != NULL && stack_two != NULL);
 	_cap_vector *one_tmp_internal_container =
 	    stack_one->_internal_container;
 	stack_one->_internal_container = stack_two->_internal_container;
