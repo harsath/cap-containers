@@ -136,15 +136,6 @@ static bool cap_forward_list_remove_if(cap_forward_list *list,
  * @return True if container is empty, if not returns False.
  */
 static bool cap_forward_list_empty(cap_forward_list *list);
-/**
- * Swap two cap_forward_list container's internal members
- *
- * @param list_one First list
- * @param list_two Second list
- */
-static void cap_forward_list_swap(cap_forward_list *list_one,
-				  cap_forward_list *list_two);
-
 // Memory:
 /**
  * Free cap_forward_list container without touching the elements it container.
@@ -219,25 +210,6 @@ static void *cap_forward_list_front(cap_forward_list *f_list) {
 	ret = pthread_mutex_unlock(&f_list->_forward_list_mtx);
 	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
 	return return_value;
-}
-
-static void cap_forward_list_swap(cap_forward_list *f_list_one,
-				  cap_forward_list *f_list_two) {
-	assert(f_list_one != NULL && f_list_two != NULL);
-	int ret = pthread_mutex_lock(&f_list_one->_forward_list_mtx);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
-	int ret2 = pthread_mutex_lock(&f_list_two->_forward_list_mtx);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret2);
-	_cap_flist_node *one_temp_head = f_list_one->head;
-	size_t one_temp_size = f_list_one->size;
-	f_list_one->head = f_list_two->head;
-	f_list_one->size = f_list_two->size;
-	f_list_two->head = one_temp_head;
-	f_list_two->size = one_temp_size;
-	ret = pthread_mutex_unlock(&f_list_one->_forward_list_mtx);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
-	ret2 = pthread_mutex_unlock(&f_list_two->_forward_list_mtx);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret2);
 }
 
 static void cap_forward_list_free(cap_forward_list *f_list) {

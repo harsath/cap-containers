@@ -19,9 +19,10 @@
 // DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 // TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
 // OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-#ifndef CAP_STACK_H
-#define CAP_STACK_H
+#ifndef CAP_CONCURRENT_STACK_H
+#define CAP_CONCURRENT_STACK_H
 #include <assert.h>
+#include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,6 +35,20 @@
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
 	calloc(number_of_elements, sizeof(type))
+#define CAP_PTHREAD_MUTEX_LOCK_STATUS(return_value)                            \
+	do {                                                                   \
+		if (return_value != 0) {                                       \
+			perror("pthread_mutex_lock");                          \
+			exit(EXIT_FAILURE);                                    \
+		}                                                              \
+	} while (0)
+#define CAP_PTHREAD_MUTEX_UNLOCK_STATUS(return_value)                          \
+	do {                                                                   \
+		if (return_value != 0) {                                       \
+			perror("pthread_mutex_unlock");                        \
+			exit(EXIT_FAILURE);                                    \
+		}                                                              \
+	} while (0)
 
 // Abstract type
 typedef struct {
@@ -44,8 +59,16 @@ typedef struct {
 
 typedef struct {
 	_cap_vector *_internal_container;
+	pthread_mutex_t _stack_mtx;
 } cap_stack;
 #endif // !DOXYGEN_SHOULD_SKIP_THIS
+
+/**
+ * These are the concurrent or thread-safe version of the containers. There is
+ * no difference in the operation. We use mutex locks during performing
+ * operations to make it thread-safe and keep the Stack's invariant
+ * valid
+ */
 
 // Prototypes (Public APIs)
 /**
@@ -90,13 +113,6 @@ static size_t cap_stack_size(cap_stack *stack);
  * @return True if cap_stack is empty, or else returns False.
  */
 static bool cap_stack_empty(cap_stack *stack);
-/**
- * Swap two cap_stack container object's internal members
- *
- * @param stack_one First cap_stack container
- * @param stack_two Second cap_stack container
- */
-static void cap_stack_swap(cap_stack *stack_one, cap_stack *stack_two);
 
 // Prototypes (Internal helpers)
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
@@ -110,40 +126,59 @@ static cap_stack *cap_stack_init() {
 	cap_stack *stack = (cap_stack *)CAP_ALLOCATOR(cap_stack, 1);
 	CAP_CHECK_NULL(stack);
 	stack->_internal_container = _cap_vector_init(CAP_STACK_INITIAL_SIZE);
+	stack->_stack_mtx = PTHREAD_MUTEX_INITIALIZER;
 	return stack;
 }
 
 static bool cap_stack_push(cap_stack *stack, void *data) {
 	assert(stack != NULL && data != NULL);
-	return _cap_vector_push_back(stack->_internal_container, data);
+	int ret = pthread_mutex_lock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
+	bool return_value =
+	    _cap_vector_push_back(stack->_internal_container, data);
+	ret = pthread_mutex_unlock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
+	return return_value;
 }
 
 static void *cap_stack_pop(cap_stack *stack) {
 	assert(stack != NULL);
-	return _cap_vector_pop_back(stack->_internal_container);
+	int ret = pthread_mutex_lock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
+	void *return_value = _cap_vector_pop_back(stack->_internal_container);
+	ret = pthread_mutex_unlock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
+	return return_value;
 }
 
 static void *cap_stack_top(cap_stack *stack) {
 	assert(stack != NULL);
-	return _cap_vector_back(stack->_internal_container);
+	int ret = pthread_mutex_lock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
+	void *return_value = _cap_vector_back(stack->_internal_container);
+	ret = pthread_mutex_unlock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
+	return return_value;
 }
 
 static size_t cap_stack_size(cap_stack *stack) {
 	assert(stack != NULL);
-	return stack->_internal_container->_size;
+	int ret = pthread_mutex_lock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
+	size_t return_value = stack->_internal_container->_size;
+	ret = pthread_mutex_unlock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
+	return return_value;
 }
 
 static bool cap_stack_empty(cap_stack *stack) {
 	assert(stack != NULL);
-	return (stack->_internal_container->_size == 0);
-}
-
-static void cap_stack_swap(cap_stack *stack_one, cap_stack *stack_two) {
-	assert(stack_one != NULL && stack_two != NULL);
-	_cap_vector *one_tmp_internal_container =
-	    stack_one->_internal_container;
-	stack_one->_internal_container = stack_two->_internal_container;
-	stack_two->_internal_container = one_tmp_internal_container;
+	int ret = pthread_mutex_lock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
+	bool return_value = (stack->_internal_container->_size == 0);
+	ret = pthread_mutex_unlock(&stack->_stack_mtx);
+	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
+	return return_value;
 }
 
 static _cap_vector *_cap_vector_init(size_t initial_size) {
@@ -187,4 +222,4 @@ static void *_cap_vector_back(_cap_vector *vector) {
 				  : vector->_internal_buffer[vector->_size - 1];
 }
 
-#endif // !CAP_STACK_H
+#endif // !CAP_CONCURRENT_STACK_H
