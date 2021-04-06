@@ -59,7 +59,7 @@ int main(int argc, const char *argv[]) {
 
 	/* Other supported APIs:
 	 * 	-> bool cap_hash_table_deep_erase(cap_hash_table*, void* key);
-	 * 		Remove the element 'key' in the hash-table and also free() the element's memory.
+	 * 		Remove the element 'key' in the hash-table and also free() the element's memory(assuming the element is dynamically allocated)
 	 *	-> bool cap_hash_table_empty(cap_hash_table*);
 	 *		Is the hash-table empty? 'true' if yes, 'false' if not.
 	 *	-> void cap_hash_table_swap(cap_hash_table*, cap_hash_table*);
