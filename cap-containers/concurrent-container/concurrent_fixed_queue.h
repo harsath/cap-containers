@@ -142,15 +142,6 @@ static void *cap_fixed_queue_front(cap_fixed_queue *queue);
  * container or returns NULL if queue is empty
  */
 static void *cap_fixed_queue_back(cap_fixed_queue *queue);
-/**
- * Swap two cap_fixed_queue object's internal elements
- *
- * @param fixed_queue_one First queue container
- * @param fixed_queue_two Second queue container
- */
-static void cap_fixed_queue_swap(cap_fixed_queue *fixed_queue_one,
-				 cap_fixed_queue *fixed_queue_two);
-
 // Memory:
 /**
  * Free the cap_fixed_queue container object without touching the elements which
@@ -296,28 +287,6 @@ static void *cap_fixed_queue_back(cap_fixed_queue *fixed_queue) {
 	ret = pthread_mutex_unlock(&fixed_queue->_fixed_queue_mtx);
 	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
 	return return_value;
-}
-
-static void cap_fixed_queue_swap(cap_fixed_queue *fixed_queue_one,
-				 cap_fixed_queue *fixed_queue_two) {
-	assert((fixed_queue_one != NULL) && (fixed_queue_two != NULL));
-	int ret = pthread_mutex_lock(&fixed_queue_one->_fixed_queue_mtx);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret);
-	int ret2 = pthread_mutex_lock(&fixed_queue_two->_fixed_queue_mtx);
-	CAP_PTHREAD_MUTEX_LOCK_STATUS(ret2);
-	size_t one_capacity = fixed_queue_one->_capacity;
-	size_t one_size = fixed_queue_one->_current_size;
-	_cap_list *one_tmp_internal_list = fixed_queue_one->_internal_list;
-	fixed_queue_one->_current_size = fixed_queue_two->_current_size;
-	fixed_queue_one->_internal_list = fixed_queue_two->_internal_list;
-	fixed_queue_one->_capacity = fixed_queue_two->_capacity;
-	fixed_queue_two->_capacity = one_capacity;
-	fixed_queue_two->_current_size = one_size;
-	fixed_queue_two->_internal_list = one_tmp_internal_list;
-	ret = pthread_mutex_unlock(&fixed_queue_one->_fixed_queue_mtx);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret);
-	ret2 = pthread_mutex_unlock(&fixed_queue_two->_fixed_queue_mtx);
-	CAP_PTHREAD_MUTEX_UNLOCK_STATUS(ret2);
 }
 
 static _cap_list *_cap_list_init() {
