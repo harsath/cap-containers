@@ -60,13 +60,17 @@ static cap_list *cap_list_init();
 
 // Lookup & Update:
 /**
- * Iterate the list and find the first occurance of the element which matches the predicate-function
+ * Iterate the list and find the first occurance of the element which matches
+ * the predicate-function
  *
  * @param list cap_list container
- * @param predicate_fn Predicate function where we will pass the elements(NULL is never passed into the predicate function)
- * @return Returns the element which matches the first occurance of the predicate, if none matches, NULL is returned
+ * @param predicate_fn Predicate function where we will pass the elements(NULL
+ * is never passed into the predicate function)
+ * @return Returns the element which matches the first occurance of the
+ * predicate, if none matches, NULL is returned
  */
-static void *cap_list_find_if(const cap_list *list, bool (*predicate_fn)(void *));
+static void *cap_list_find_if(const cap_list *list,
+			      bool (*predicate_fn)(void *));
 /**
  * Push an element at the front of the cap_list container
  *
@@ -87,48 +91,57 @@ static bool cap_list_push_back(cap_list *list, void *item);
  * Pop the element at the front of the cap_list container
  *
  * @param list cap_list container
- * @return Returns the element if operation is success, returns NULL if cap_list container is empty
+ * @return Returns the element if operation is success, returns NULL if cap_list
+ * container is empty
  */
 static void *cap_list_pop_front(cap_list *list);
 /**
  * Pop the element at the end of the cap_list container
  *
  * @param list cap_list container
- * @return Returns the element if operation is success, returns NULL if cap_list container is empty
+ * @return Returns the element if operation is success, returns NULL if cap_list
+ * container is empty
  */
 static void *cap_list_pop_back(cap_list *);
 /**
  * Gives access to the front of the cap_list without modifying the container
  *
  * @param list cap_list container
- * @return Gives access to the front element of the cap_list container, returns NULL if the container is empty
+ * @return Gives access to the front element of the cap_list container, returns
+ * NULL if the container is empty
  */
 static void *cap_list_front(const cap_list *list);
 /**
  * Gives access to the end of the cap_list without modifying the container
  *
  * @param list cap_list container
- * @return Gives access to the element at the back of the cap_list container, returns NULL if the container is empty
+ * @return Gives access to the element at the back of the cap_list container,
+ * returns NULL if the container is empty
  */
 static void *cap_list_back(const cap_list *list);
 /**
- * Iterates the cap_list container and remove all occurance of the element which matches the predicate function
+ * Iterates the cap_list container and remove all occurance of the element which
+ * matches the predicate function
  *
  * @param list cap_list container
- * @param predicate_fn Predicate function which we pass the elements into, implementation ensures that predicate_fn will never gets a NULL as param.
- * @return True if any element is removed, False if the given predicate_fn does not match any of the elements
+ * @param predicate_fn Predicate function which we pass the elements into,
+ * implementation ensures that predicate_fn will never gets a NULL as param.
+ * @return True if any element is removed, False if the given predicate_fn does
+ * not match any of the elements
  */
 static bool cap_list_remove_if(cap_list *list, bool (*predicate_fn)(void *));
 
 // Memory:
 /**
- * Frees the cap_list container object and also frees the elements which it contains(assuming the elements are dynamically allocated)
+ * Frees the cap_list container object and also frees the elements which it
+ * contains(assuming the elements are dynamically allocated)
  *
  * @param list cap_list container
  */
 static void cap_list_deep_free(cap_list *list);
 /**
- * Frees only the cap_list container object and does not touch the elements which it contains
+ * Frees only the cap_list container object and does not touch the elements
+ * which it contains
  *
  * @param list cap_list container
  */

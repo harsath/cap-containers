@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -44,23 +45,110 @@ typedef struct cap_map {
 } cap_map;
 
 bool _cap_map_is_seeded = false;
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
+/**
+ * Initilize a cap_map container object
+ *
+ * @return Newly allocated pointer to the head
+ */
 static cap_map *cap_map_init(size_t key_size,
 			     int (*compare_fn)(void *, void *));
+/**
+ * Insert a key-value pair onto the cap_map container.
+ *
+ * The container doesn't manage the life time of the given pointers, neither the
+ * Key's pointer nor the Value's one. Use must explicitly free() the pointer
+ * when they don't need it. They must remove the pointer before calling free()
+ * on it, if not done so, the container will hold a pointer which is already
+ * freed
+ *
+ * @param map cap_map container
+ * @param key Pointer to the key
+ * @param value Pointer to the value
+ * @return Returns 0 if the operation is success, or else returns -1 is there
+ * was a memory allocation error
+ */
 static int cap_map_insert(cap_map *map, void *key, void *value);
+/**
+ * Find an element on the cap_map container
+ *
+ * @param map cap_map container
+ * @param key Key for which we need to find the value.
+ * @return Returns the pointer to the element, if the element with key is not
+ * found, it returns NULL
+ */
 static void *cap_map_find(cap_map *map, void *key);
+/**
+ * Check if an item with the given key exists within the cap_map container.
+ *
+ * @param map cap_map container
+ * @param key Key for which we need to see if the elements exists.
+ * @return True if the item does exists, or else returns false if not
+ */
 static bool cap_map_contains(cap_map *map, void *key);
+/**
+ * Get the function pointer to the handle which the cap_map container uses to
+ * compare two keys
+ *
+ * @param map cap_map container
+ * @return Function pointer to the handle which compares two keys. The one given
+ * during the initilization of the cap_map
+ */
 static int (*cap_map_compare_fn(cap_map *map))(void *, void *);
+/**
+ * Get the current size of the container i.e number of elements
+ *
+ * @param map cap_map container
+ * @return size of the container.
+ */
 static size_t cap_map_size(cap_map *map);
+/**
+ * Remove an element which is mapped to the given key from the container
+ *
+ * @param map cap_map container
+ * @return 0 if the key is found and the element is removed successfully.
+ * Returns -1 if the element is not found.
+ */
 static int cap_map_remove(cap_map *map, void *key);
+/**
+ * Get the max height of the cap_map
+ *
+ * The returned value is the max height of the skip list, which the cap_map
+ * internally uses as the underlying implementation
+ *
+ * @param map cap_map container
+ * @return Max height of the container's implementation
+ */
 static int cap_map_height(cap_map *map);
+/**
+ * Free the cap_map container. It doesn't touch the key or value's underlying
+ * memory. Only frees the memory which the container owns.
+ *
+ * @param map cap_map container
+ */
 static void cap_map_free(cap_map *map);
+/**
+ * Free the cap_map container and also the underlying memory of the values. When
+ * we free the node's memory, we also call free() on the values(assuming that
+ * the values are dynamically allocated)
+ *
+ * @param map cap_map container
+ */
 static void cap_map_deep_free(cap_map *map);
+/**
+ * Check if the cap_map is empry or not
+ *
+ * @param map cap_map container
+ * @return True if the container is empty, False if not.
+ */
 static bool cap_map_empty(cap_map *map);
 
+#ifndef DOXYGEN_SHOULD_SKIP_THIS
 static int _cap_map_get_rand_level(int max_number);
 static void _cap_map_free_node(cap_map *map);
 static void _cap_map_deep_free_node(cap_map *map);
+#endif // !DOXYGEN_SHOULD_SKIP_THIS
 
 static cap_map *cap_map_init(size_t key_size,
 			     int (*compare_fn)(void *, void *)) {
