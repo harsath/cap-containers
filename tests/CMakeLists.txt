@@ -16,6 +16,7 @@ set(
 	test-stack.c
 	test-forward-list.c
 	test-hash-table-separate-chaining.c
+	test-map.c
 )
 add_executable(
 	${PROJECT_NAME}
