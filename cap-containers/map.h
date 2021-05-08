@@ -22,13 +22,11 @@
 #ifndef CAP_MAP_H
 #define CAP_MAP_H
 #include <assert.h>
-#include <cstdlib>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -122,7 +120,7 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 
 static void *cap_map_find(cap_map *map, void *key) {
 	assert(map != NULL && key != NULL);
-	cap_map *current_node;
+	cap_map *current_node = map;
 	int current_level = map->_height - 1;
 	while (current_level >= 0) {
 		if (current_node->_forward[current_level] == NULL) {
