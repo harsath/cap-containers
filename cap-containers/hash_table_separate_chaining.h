@@ -31,8 +31,6 @@
 #define CAP_DEFAULT_HASHTABLE_MAX_LOAD_FACTOR 1
 #define CAP_HASHTABLE_LOAD_FACTOR(hash_table_ptr)                              \
 	(hash_table_ptr->size == hash_table_ptr->capacity)
-#define CAP_CHECK_NULL(value)                                                  \
-	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -310,7 +308,7 @@ static void cap_hash_table_insert(cap_hash_table *hash_table, void *key,
 	}
 	_cap_ll_chain_push_front(&hash_table->_hash_buckets[key_index], key,
 				 hash_table->key_size, value);
-	if(find_if_key == NULL) hash_table->size++;
+	if (find_if_key == NULL) hash_table->size++;
 }
 
 static bool cap_hash_table_contains(cap_hash_table *hash_table, void *key) {
@@ -344,12 +342,21 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 					   size_t init_capacity) {
 	cap_hash_table *hash_table =
 	    (cap_hash_table *)CAP_ALLOCATOR(cap_hash_table, 1);
+	if (!hash_table) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	hash_table->capacity = init_capacity;
 	hash_table->key_size = key_size;
 	hash_table->size = 0;
 	hash_table->compare_fn = _cap_hash_table_default_compare;
 	hash_table->_hash_buckets =
 	    (_cap_ll_chain *)CAP_ALLOCATOR(_cap_ll_chain, init_capacity);
+	if (!hash_table->_hash_buckets) {
+		fprintf(stderr, "memory allocation failur\n");
+		free(hash_table);
+		return NULL;
+	}
 	hash_table->hash_fn = _hash_fn_default_hash;
 	for (size_t i = 0; i < init_capacity; i++) {
 		hash_table->_hash_buckets[i]._head_node = NULL;
@@ -361,6 +368,10 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 static _cap_ll_chain *_cap_ll_chain_init() {
 	_cap_ll_chain *f_list =
 	    (_cap_ll_chain *)CAP_ALLOCATOR(_cap_ll_chain, 1);
+	if (!f_list) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	f_list->_head_node = NULL;
 	f_list->_num_items = 0;
 	return f_list;
@@ -372,10 +383,18 @@ static bool _cap_ll_chain_push_front(_cap_ll_chain *f_list, void *key,
 	_cap_hash_node *current_head = f_list->_head_node;
 	_cap_hash_node *hash_node =
 	    (_cap_hash_node *)CAP_ALLOCATOR(_cap_hash_node, 1);
-	if (hash_node == NULL) return false;
+	if (!hash_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	hash_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	hash_node->key =
 	    (CAP_GENERIC_TYPE_PTR)CAP_ALLOCATOR(CAP_GENERIC_TYPE, key_size);
+	if (!hash_node->key) {
+		fprintf(stderr, "memory allocation failur\n");
+		free(hash_node);
+		return false;
+	}
 	memcpy(hash_node->key, key, key_size);
 	hash_node->next = current_head;
 	f_list->_head_node = hash_node;

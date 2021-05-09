@@ -150,7 +150,16 @@ static void cap_list_free(cap_list *list);
 static cap_list *cap_list_init() {
 	_cap_list_node *head_and_tail_nodes =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 2);
-	cap_list *d_list = (cap_list *)malloc(sizeof(cap_list));
+	if (!head_and_tail_nodes) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
+	cap_list *d_list = (cap_list *)CAP_ALLOCATOR(cap_list, 1);
+	if (!d_list) {
+		fprintf(stderr, "memory allocation failur\n");
+		free(head_and_tail_nodes);
+		return NULL;
+	}
 	d_list->_head_node = head_and_tail_nodes;
 	d_list->_tail_node = (head_and_tail_nodes + 1);
 	d_list->_head_node->data = NULL;
@@ -166,7 +175,10 @@ static bool cap_list_push_front(cap_list *d_list, void *data) {
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
-	if (new_node == NULL) return false;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	new_node->previous = d_list->_head_node;
 	_cap_list_node *tmp_head_next_holder = d_list->_head_node->next;
@@ -180,7 +192,10 @@ static bool cap_list_push_back(cap_list *d_list, void *data) {
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
-	if (new_node == NULL) return false;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	new_node->next = d_list->_tail_node;
 	_cap_list_node *tmp_tail_prev_holder = d_list->_tail_node->previous;
@@ -261,7 +276,10 @@ static bool cap_list_insert_after(cap_list *d_list,
 	       (data != NULL));
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
-	if (new_node == NULL) return false;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	new_node->previous = (_cap_list_node *)insert_after_this_node;
 	new_node->next = ((_cap_list_node *)insert_after_this_node)->next;

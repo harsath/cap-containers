@@ -356,6 +356,10 @@ static bool _cap_vector_reserve(cap_vector *, size_t);
 static cap_vector *cap_vector_init(size_t initial_size) {
 	assert(initial_size > 0);
 	cap_vector *vector = (cap_vector *)CAP_ALLOCATOR(cap_vector, 1);
+	if (!vector) {
+		fprintf(stderr, "memory allocation failue\n");
+		return NULL;
+	}
 	vector->_internal_buffer = (CAP_GENERIC_TYPE_PTR *)CAP_ALLOCATOR(
 	    CAP_GENERIC_TYPE_PTR, initial_size);
 	vector->_capacity = initial_size;
@@ -367,6 +371,10 @@ static cap_vector_iterator *cap_vector_iterator_init(cap_vector *vector) {
 	assert(vector != NULL);
 	cap_vector_iterator *iterator =
 	    (cap_vector_iterator *)CAP_ALLOCATOR(cap_vector_iterator, 1);
+	if (!iterator) {
+		fprintf(stderr, "memory allocation failue\n");
+		return NULL;
+	}
 	iterator->_current_index = 0;
 	iterator->_internal_pointer = vector;
 	iterator->data = vector->_internal_buffer[0];
@@ -412,7 +420,10 @@ static bool cap_vector_resize(cap_vector *vector, size_t new_size) {
 static cap_vector *cap_vector_copy(cap_vector *vector) {
 	assert(vector != NULL);
 	cap_vector *copy_vector = (cap_vector *)CAP_ALLOCATOR(cap_vector, 1);
-	if (copy_vector == NULL) return NULL;
+	if (!copy_vector) {
+		fprintf(stderr, "memory allocation failue\n");
+		return NULL;
+	}
 	copy_vector->_capacity = vector->_capacity;
 	copy_vector->_internal_buffer = vector->_internal_buffer;
 	copy_vector->_size = vector->_size;
@@ -423,13 +434,17 @@ static cap_vector *cap_vector_deep_copy(cap_vector *vector) {
 	assert(vector != NULL);
 	cap_vector *deep_copy_vector =
 	    (cap_vector *)CAP_ALLOCATOR(cap_vector, 1);
-	if (deep_copy_vector == NULL) return NULL;
+	if (!deep_copy_vector) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	deep_copy_vector->_capacity = vector->_capacity;
 	deep_copy_vector->_size = vector->_size;
 	deep_copy_vector->_internal_buffer =
 	    (CAP_GENERIC_TYPE_PTR *)CAP_ALLOCATOR(CAP_GENERIC_TYPE_PTR,
 						  vector->_capacity);
-	if (deep_copy_vector->_internal_buffer == NULL) {
+	if (!deep_copy_vector->_internal_buffer) {
+		fprintf(stderr, "memory allocation failue\n");
 		free(deep_copy_vector);
 		return NULL;
 	}
@@ -515,7 +530,10 @@ static bool cap_vector_shrink_to_fit(cap_vector *vector) {
 	CAP_GENERIC_TYPE_PTR *tmp_ptr = (CAP_GENERIC_TYPE_PTR *)realloc(
 	    vector->_internal_buffer,
 	    sizeof(CAP_GENERIC_TYPE_PTR) * vector->_size);
-	if (tmp_ptr == NULL) return false;
+	if (!tmp_ptr) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	vector->_internal_buffer = tmp_ptr;
 	vector->_capacity = vector->_size;
 	return true;

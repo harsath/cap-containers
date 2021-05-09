@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-#define CAP_CHECK_NULL(value)                                                  \
-	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -137,9 +135,16 @@ static void _cap_list_free(_cap_list *);
 static cap_dynamic_queue *cap_dynamic_queue_init() {
 	cap_dynamic_queue *dynamic_queue =
 	    (cap_dynamic_queue *)CAP_ALLOCATOR(cap_dynamic_queue, 1);
-	CAP_CHECK_NULL(dynamic_queue);
+	if (!dynamic_queue) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	dynamic_queue->_internal_list = _cap_list_init();
-	CAP_CHECK_NULL(dynamic_queue->_internal_list);
+	if (!dynamic_queue->_internal_list) {
+		fprintf(stderr, "memory allocation failur\n");
+		free(dynamic_queue);
+		return NULL;
+	}
 	dynamic_queue->_current_size = 0;
 	return dynamic_queue;
 }
@@ -166,7 +171,7 @@ static bool cap_dynamic_queue_push(cap_dynamic_queue *dynamic_queue,
 	assert((dynamic_queue != NULL) && (data != NULL));
 	bool return_val =
 	    _cap_list_push_front(dynamic_queue->_internal_list, data);
-	dynamic_queue->_current_size++;
+	if (return_val) dynamic_queue->_current_size++;
 	return return_val;
 }
 
@@ -174,7 +179,7 @@ static void *cap_dynamic_queue_pop(cap_dynamic_queue *dynamic_queue) {
 	assert(dynamic_queue != NULL);
 	if (dynamic_queue->_current_size <= 0) return NULL;
 	void *returner = _cap_list_pop_back(dynamic_queue->_internal_list);
-	dynamic_queue->_current_size--;
+	if (returner) dynamic_queue->_current_size--;
 	return returner;
 }
 
@@ -203,7 +208,16 @@ static void cap_dynamic_queue_swap(cap_dynamic_queue *dynamic_queue_one,
 static _cap_list *_cap_list_init() {
 	_cap_list_node *head_and_tail_nodes =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 2);
+	if (!head_and_tail_nodes) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	_cap_list *d_list = (_cap_list *)CAP_ALLOCATOR(_cap_list, 1);
+	if (!d_list) {
+		fprintf(stderr, "memory allocation failur\n");
+		free(head_and_tail_nodes);
+		return NULL;
+	}
 	d_list->_head_node = head_and_tail_nodes;
 	d_list->_tail_node = (head_and_tail_nodes + 1);
 	d_list->_head_node->data = NULL;
@@ -219,7 +233,10 @@ static bool _cap_list_push_front(_cap_list *d_list, void *data) {
 	assert((d_list != NULL) && (data != NULL));
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
-	if (new_node == NULL) return false;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	new_node->previous = d_list->_head_node;
 	_cap_list_node *tmp_head_next_holder = d_list->_head_node->next;

@@ -140,6 +140,10 @@ static void cap_forward_list_deep_free(cap_forward_list *list);
 static cap_forward_list *cap_forward_list_init() {
 	cap_forward_list *f_list =
 	    (cap_forward_list *)CAP_ALLOCATOR(cap_forward_list, 1);
+	if (!f_list) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	f_list->head = NULL;
 	f_list->size = 0;
 	return f_list;
@@ -149,7 +153,10 @@ static bool cap_forward_list_push_front(cap_forward_list *f_list, void *data) {
 	assert(f_list != NULL && data != NULL);
 	_cap_flist_node *current_node = f_list->head;
 	f_list->head = (_cap_flist_node *)CAP_ALLOCATOR(_cap_flist_node, 1);
-	if (f_list->head == NULL) return false;
+	if (!f_list->head) {
+		fprintf(stderr, "memory allocation failur\n");
+		return false;
+	}
 	f_list->head->data = (CAP_GENERIC_TYPE_PTR)data;
 	f_list->head->next = current_node;
 	f_list->size++;
@@ -158,7 +165,7 @@ static bool cap_forward_list_push_front(cap_forward_list *f_list, void *data) {
 
 static void *cap_forward_list_pop_front(cap_forward_list *f_list) {
 	assert(f_list != NULL);
-	if (f_list->head == NULL) return NULL;
+	if (!f_list->head) return NULL;
 	void *returner = f_list->head->data;
 	f_list->head = f_list->head->next;
 	f_list->size--;
@@ -257,25 +264,5 @@ static bool cap_forward_list_remove_if(cap_forward_list *f_list,
 	}
 	return (num_removed != 0);
 }
-
-// static bool cap_forward_list_remove_if(cap_forward_list* f_list, bool
-// (*predicate_fn)(void*)){ 	cap_forward_list* tmp_iter_list =
-// (cap_forward_list*) CAP_ALLOCATOR(cap_forward_list, 1);
-// tmp_iter_list->head = f_list->head; 	tmp_iter_list->size = f_list->size;
-// f_list->head = NULL; 	f_list->size = 0; 	_cap_flist_node* current_node =
-// tmp_iter_list->head; 	size_t num_removed = 0; 	while(current_node != NULL){
-// 		if(current_node->data != NULL &&
-// 			predicate_fn(current_node->data)){
-// 			void* delete_node = current_node;
-// 			current_node = current_node->next;
-// 			free(delete_node);
-// 			num_removed += 1;
-// 		}else{
-// 			cap_forward_list_push_front(f_list, current_node->data);
-// 			current_node = current_node->next;
-// 		}
-// 	}
-// 	return (num_removed != 0);
-// }
 
 #endif // !CAP_FORWARD_LIST_H
