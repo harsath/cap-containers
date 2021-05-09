@@ -155,7 +155,10 @@ static cap_map *cap_map_init(size_t key_size,
 	assert(compare_fn != NULL);
 	if (!_cap_map_is_seeded) srand(time(NULL));
 	cap_map *map = (cap_map *)CAP_ALLOCATOR(cap_map, 1);
-	if (!map) return NULL;
+	if (!map) {
+		fprintf(stderr, "memory allocation failur\n");
+		return NULL;
+	}
 	map->_compare_fn = compare_fn;
 	map->_height = CAP_MAP_MAX_SKIPLIST_SIZE;
 	map->_size = 0;
@@ -192,7 +195,10 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 	new_node->_value = value;
 	new_node->_key =
 	    (unsigned char *)CAP_ALLOCATOR(unsigned char, map->_key_size);
-	if (!new_node->_key) return -1;
+	if (!new_node->_key) {
+		fprintf(stderr, "memory allocation failur\n");
+		return -1;
+	}
 	memcpy(new_node->_key, key, map->_key_size);
 	new_node->_height = _cap_map_get_rand_level(map->_height);
 	new_node->_key_size = map->_key_size;

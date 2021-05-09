@@ -27,8 +27,6 @@
 #include <stdlib.h>
 #include <string.h>
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
-#define CAP_CHECK_NULL(value)                                                  \
-	if (value == NULL) return NULL
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
@@ -159,9 +157,16 @@ static cap_fixed_queue *cap_fixed_queue_init(size_t initial_size) {
 	assert(initial_size > 0);
 	cap_fixed_queue *fixed_queue =
 	    (cap_fixed_queue *)CAP_ALLOCATOR(cap_fixed_queue, 1);
-	CAP_CHECK_NULL(fixed_queue);
+	if (!fixed_queue) {
+		fprintf(stderr, "memory allocation failed\n");
+		return NULL;
+	}
 	fixed_queue->_internal_list = _cap_list_init();
-	CAP_CHECK_NULL(fixed_queue->_internal_list);
+	if (!fixed_queue->_internal_list) {
+		fprintf(stderr, "memory allocation failed\n");
+		free(fixed_queue);
+		return NULL;
+	}
 	fixed_queue->_current_size = 0;
 	fixed_queue->_capacity = initial_size;
 	return fixed_queue;
@@ -198,8 +203,8 @@ cap_fixed_queue_remaining_space(const cap_fixed_queue *fixed_queue) {
 static bool cap_fixed_queue_push(cap_fixed_queue *fixed_queue, void *data) {
 	assert((fixed_queue != NULL) && (data != NULL));
 	if (fixed_queue->_current_size >= fixed_queue->_capacity) return false;
-	_cap_list_push_front(fixed_queue->_internal_list, data);
-	fixed_queue->_current_size++;
+	if (_cap_list_push_front(fixed_queue->_internal_list, data))
+		fixed_queue->_current_size++;
 	return true;
 }
 
@@ -207,7 +212,7 @@ static void *cap_fixed_queue_pop(cap_fixed_queue *fixed_queue) {
 	assert(fixed_queue != NULL);
 	if (fixed_queue->_current_size <= 0) return NULL;
 	void *returner = _cap_list_pop_back(fixed_queue->_internal_list);
-	fixed_queue->_current_size--;
+	if (returner) fixed_queue->_current_size--;
 	return returner;
 }
 
