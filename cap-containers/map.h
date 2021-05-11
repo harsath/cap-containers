@@ -44,6 +44,14 @@ typedef struct cap_map {
 	struct cap_map *_forward[CAP_MAP_MAX_SKIPLIST_SIZE];
 } cap_map;
 
+typedef struct {
+	CAP_GENERIC_TYPE_PTR key;
+	void *value;
+	size_t _current_index;
+	cap_map *_original_reference;
+	cap_map *_current_element;
+} cap_map_iterator;
+
 bool _cap_map_is_seeded = false;
 #endif // !DOXYGEN_SHOULD_SKIP_THIS
 
@@ -54,6 +62,39 @@ bool _cap_map_is_seeded = false;
  */
 static cap_map *cap_map_init(size_t key_size,
 			     int (*compare_fn)(void *, void *));
+/**
+ * Get the current size of the container i.e number of elements
+ *
+ * @param map cap_map container
+ * @return size of the container.
+ */
+static size_t cap_map_size(cap_map *map);
+/**
+ * Remove an element which is mapped to the given key from the container
+ *
+ * @param map cap_map container
+ * @return 0 if the key is found and the element is removed successfully.
+ * Returns -1 if the element is not found.
+ */
+static int cap_map_remove(cap_map *map, void *key);
+/**
+ * Get the max height of the cap_map
+ *
+ * The returned value is the max height of the skip list, which the cap_map
+ * internally uses as the underlying implementation
+ *
+ * @param map cap_map container
+ * @return Max height of the container's implementation
+ */
+static int cap_map_height(cap_map *map);
+/**
+ * Initialize an Iterator object for iterating over a cap_map container
+ *
+ * @param cap_map container for which we need to create a iterator
+ * @return Allocated cap_map_iterator object for iterating the container
+ * which is given in the parameter
+ */
+static cap_map_iterator *cap_map_iterator_init(cap_map *map);
 /**
  * Insert a key-value pair onto the cap_map container.
  *
@@ -97,30 +138,54 @@ static bool cap_map_contains(cap_map *map, void *key);
  */
 static int (*cap_map_compare_fn(cap_map *map))(void *, void *);
 /**
- * Get the current size of the container i.e number of elements
+ * Check if an element which is pointed by the iterator matches the given
+ * predicate function
  *
- * @param map cap_map container
- * @return size of the container.
+ * @param iterator cap_map_iterator iterator object
+ * @param predicate_fn Predicate function
+ * @return Returns True, if predicate_fn says so, if not returns False.
  */
-static size_t cap_map_size(cap_map *map);
+static bool cap_map_iterator_equals_predicate(cap_map_iterator *iterator,
+						 bool (*predicate_fn)(void *));
 /**
- * Remove an element which is mapped to the given key from the container
+ * Increment the Iterator to the next element on the container
  *
- * @param map cap_map container
- * @return 0 if the key is found and the element is removed successfully.
- * Returns -1 if the element is not found.
+ * @param iterator cap_map_iterator iterator object
  */
-static int cap_map_remove(cap_map *map, void *key);
+static void cap_map_iterator_increment(cap_map_iterator *iterator);
 /**
- * Get the max height of the cap_map
+ * Peek into the next element of the container without incrementing the iterator
  *
- * The returned value is the max height of the skip list, which the cap_map
- * internally uses as the underlying implementation
- *
- * @param map cap_map container
- * @return Max height of the container's implementation
+ * @param iterator cap_map_iterator iterator object
+ * @return Next element of the container, if the iterator is at the last
+ * element, it returns NULL
  */
-static int cap_map_height(cap_map *map);
+static void *cap_map_iterator_next(cap_map_iterator *iterator);
+/**
+ * Get an iterator to the start of a cap_map container
+ *
+ * @param iterator cap_map container
+ * @return Allocated cap_map_iterator iterator which points to the first
+ * element of the container
+ */
+static cap_map_iterator *cap_map_begin(cap_map *map);
+/**
+ * Pop the element at the front of the cap_map container
+ *
+ * This operation might hurt performance, since this involves moving every item
+ * from index 1 to index N
+ * @param map cap_map container
+ * @return First element, which is poped
+ */
+static void *cap_map_front(cap_map *map);
+/**
+ * Free the cap_map_iterator iterator object. This operation doesn't free the
+ * underlying element which this iterator points to but only the
+ * cap_map_iterator object
+ *
+ * @param iterator cap_map_iterator iterator object to be freed
+ */
+static void cap_map_iterator_free(cap_map_iterator *iterator);
 /**
  * Free the cap_map container. It doesn't touch the key or value's underlying
  * memory. Only frees the memory which the container owns.
@@ -137,7 +202,7 @@ static void cap_map_free(cap_map *map);
  */
 static void cap_map_deep_free(cap_map *map);
 /**
- * Check if the cap_map is empry or not
+ * Check if the cap_map is empty or not
  *
  * @param map cap_map container
  * @return True if the container is empty, False if not.
@@ -166,6 +231,32 @@ static cap_map *cap_map_init(size_t key_size,
 	return map;
 }
 
+static size_t cap_map_size(cap_map *map) {
+	assert(map != NULL);
+	return map->_size;
+}
+
+static int cap_map_height(cap_map *map) {
+	assert(map != NULL);
+	return map->_height;
+}
+
+static cap_map_iterator *cap_map_iterator_init(cap_map *map) {
+	assert(map != NULL);
+	cap_map_iterator *iterator =
+	    (cap_map_iterator *)CAP_ALLOCATOR(cap_map_iterator, 1);
+	if (!iterator) {
+		fprintf(stderr, "memory allocation failue\n");
+		return NULL;
+	}
+	iterator->_original_reference = map;
+	iterator->_current_element = map->_forward[0];
+	iterator->_current_index = 0;
+	iterator->key = iterator->_current_element->_key;
+	iterator->value = iterator->_current_element->_value;
+	return iterator;
+}
+
 static int cap_map_insert(cap_map *map, void *key, void *value) {
 	assert(map != NULL && key != NULL && value != NULL);
 	cap_map *current_node = map;
@@ -191,11 +282,15 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 		}
 	}
 	cap_map *new_node = (cap_map *)CAP_ALLOCATOR(cap_map, 1);
-	if (!new_node) return -1;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return -1;
+	}
 	new_node->_value = value;
 	new_node->_key =
 	    (unsigned char *)CAP_ALLOCATOR(unsigned char, map->_key_size);
 	if (!new_node->_key) {
+		free(new_node);
 		fprintf(stderr, "memory allocation failur\n");
 		return -1;
 	}
@@ -203,9 +298,9 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 	new_node->_height = _cap_map_get_rand_level(map->_height);
 	new_node->_key_size = map->_key_size;
 	++map->_size;
-	for (int i = map->_height - 1; i > new_node->_height; --i)
+	for (int i = CAP_MAP_MAX_SKIPLIST_SIZE - 1; i > new_node->_height; --i)
 		new_node->_forward[i] = NULL;
-	for (int i = map->_height - 1; i >= 0; --i) {
+	for (int i = new_node->_height - 1; i >= 0; --i) {
 		new_node->_forward[i] = previous[i]->_forward[i];
 		previous[i]->_forward[i] = new_node;
 	}
@@ -236,11 +331,6 @@ static void *cap_map_find(cap_map *map, void *key) {
 	return NULL;
 }
 
-static int cap_map_height(cap_map *map) {
-	assert(map != NULL);
-	return map->_height;
-}
-
 static bool cap_map_contains(cap_map *map, void *key) {
 	assert(map != NULL && key != NULL);
 	return cap_map_find(map, key) != NULL;
@@ -250,23 +340,51 @@ static int (*cap_map_compare_fn(cap_map *map))(void *, void *) {
 	assert(map != NULL);
 	return map->_compare_fn;
 }
-
-static size_t cap_map_size(cap_map *map) {
-	assert(map != NULL);
-	return map->_size;
+static bool cap_map_iterator_equals_predicate(cap_map_iterator *iter,
+					      bool (*predicate_fn)(void *)) {
+	assert(iter != NULL && predicate_fn != NULL);
+	return predicate_fn(iter->key);
 }
 
-static bool cap_map_empty(cap_map *map) {
+static void cap_map_iterator_increment(cap_map_iterator *iterator) {
+	assert(iterator != NULL);
+	if (iterator->_original_reference->_size ==
+	    iterator->_current_index + 1) {
+		iterator->key = NULL;
+		iterator->value = NULL;
+		return;
+	}
+	iterator->_current_element = iterator->_current_element->_forward[0];
+	iterator->key = iterator->_current_element->_key;
+	iterator->value = iterator->_current_element->_value;
+	++iterator->_current_index;
+}
+ 
+static void *cap_map_iterator_next(cap_map_iterator *iterator) {
+	assert(iterator != NULL);
+	if (iterator->_original_reference->_size ==
+	    iterator->_current_index + 1)
+		return NULL;
+	return iterator->_current_element->_forward[0]->_key;
+}
+
+static cap_map_iterator *cap_map_begin(cap_map *map) {
 	assert(map != NULL);
-	return map->_size == 0;
+	return cap_map_iterator_init(map);
+}
+
+static void *cap_map_front(cap_map *map) {
+	assert(map != NULL);
+	return map->_forward[0];
 }
 
 static int cap_map_remove(cap_map *map, void *key) {
 	assert(map != NULL && key != NULL);
+	if (!map->_size) return -1;
 	cap_map *current_node = map;
 	int current_level = map->_height - 1;
 	cap_map *previous[CAP_MAP_MAX_SKIPLIST_SIZE];
-	int cmp;
+	int cmp = 1;
 	while (current_level >= 0) {
 		previous[current_level] = current_node;
 		if (current_node->_forward[current_level] == NULL) {
@@ -283,10 +401,10 @@ static int cap_map_remove(cap_map *map, void *key) {
 		}
 	}
 	if (!cmp) {
-		cap_map *node_to_remove = current_node->_forward[0];
-		for (int i = node_to_remove->_height; i >= 0; --i)
-			previous[i]->_forward[i] = node_to_remove->_forward[i];
-		_cap_map_free_node(node_to_remove);
+		cap_map *free_me = current_node->_forward[0];
+		for (int i = CAP_MAP_MAX_SKIPLIST_SIZE - 1; i >= 0; --i)
+			previous[i]->_forward[i] = free_me->_forward[i];
+		_cap_map_free_node(free_me);
 		map->_size--;
 		return 0;
 	}
@@ -295,9 +413,13 @@ static int cap_map_remove(cap_map *map, void *key) {
 
 static void cap_map_free(cap_map *map) {
 	assert(map != NULL);
+	if (!map->_size) {
+		free(map);
+		return;
+	}
 	cap_map *free_me = map;
 	map = map->_forward[0];
-	for (int i = map->_height - 1; i >= 0; --i) {
+	for (int i = free_me->_size - 1; i >= 0; --i) {
 		_cap_map_free_node(free_me);
 		free_me = map;
 		map = map->_forward[0];
@@ -306,6 +428,10 @@ static void cap_map_free(cap_map *map) {
 
 static void cap_map_deep_free(cap_map *map) {
 	assert(map != NULL);
+	if (!map->_size) {
+		free(map);
+		return;
+	}
 	cap_map *free_me = map;
 	map = map->_forward[0];
 	for (int i = map->_height - 1; i >= 0; --i) {
@@ -315,6 +441,11 @@ static void cap_map_deep_free(cap_map *map) {
 	}
 }
 
+static bool cap_map_empty(cap_map *map) {
+	assert(map != NULL);
+	return map->_size == 0;
+}
+
 static int _cap_map_get_rand_level(int max_number) {
 	int returner = 1;
 	while (returner < max_number && (rand() > RAND_MAX / 2)) returner += 1;
@@ -322,8 +453,10 @@ static int _cap_map_get_rand_level(int max_number) {
 }
 
 static void _cap_map_free_node(cap_map *map) {
-	if (map)
-		if (map->_key) free(map->_key);
+	if (map) {
+		free(map->_key);
+		free(map);
+	}
 }
 
 static void _cap_map_deep_free_node(cap_map *map) {
@@ -332,6 +465,11 @@ static void _cap_map_deep_free_node(cap_map *map) {
 		if (map->_value) free(map->_value);
 		free(map);
 	}
+}
+
+static void cap_map_iterator_free(cap_map_iterator *iterator) {
+	assert(iterator != NULL);
+	free(iterator);
 }
 
 #endif // !CAP_MAP_H
