@@ -44,6 +44,13 @@ typedef struct cap_map {
 	struct cap_map *_forward[CAP_MAP_MAX_SKIPLIST_SIZE];
 } cap_map;
 
+typedef struct {
+	cap_map *_internal_pointer;
+	CAP_GENERIC_TYPE_PTR _key;
+	void *_value;
+	struct cap_map *_forward[CAP_MAP_MAX_SKIPLIST_SIZE];
+} cap_map_iterator;
+
 bool _cap_map_is_seeded = false;
 #endif // !DOXYGEN_SHOULD_SKIP_THIS
 
@@ -69,6 +76,7 @@ static cap_map *cap_map_init(size_t key_size,
  * @return Returns 0 if the operation is success, or else returns -1 is there
  * was a memory allocation error
  */
+static cap_map_iterator *cap_map_iterator_init(cap_map *map);
 static int cap_map_insert(cap_map *map, void *key, void *value);
 /**
  * Find an element on the cap_map container
@@ -165,6 +173,20 @@ static cap_map *cap_map_init(size_t key_size,
 	map->_key_size = key_size;
 	return map;
 }
+static cap_map_iterator *cap_map_iterator_init(cap_map *map){
+	assert(map != NULL);
+	cap_map_iterator *iterator = 
+	    (cap_map_iterator *)CAP_ALLOCATOR(cap_map_iterator, 1);
+	if (!iterator) {
+		fprintf(stderr, "memory allocation failue\n");
+		return NULL;
+	}
+	iterator->_internal_pointer = map;
+	iterator->_key = map->_key[0];
+	iterator->_value = map->_value;
+	return iterator;
+}
+
 
 static int cap_map_insert(cap_map *map, void *key, void *value) {
 	assert(map != NULL && key != NULL && value != NULL);
