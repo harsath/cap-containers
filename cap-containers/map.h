@@ -44,11 +44,12 @@ typedef struct cap_map {
 	struct cap_map *_forward[CAP_MAP_MAX_SKIPLIST_SIZE];
 } cap_map;
 
+// Since on the Iterator for cap_map we are traversing through the singly linked list, we do not need to store an array for all elements, We only need a single _current pointer which will point to the current element which we are seeing(initially it will be map->_forward[0]). If the cap_map is empty, the item with index 0 will be NULL, in that case, the _key and _value should also be NULL, we expect the user to to check against NULL.
 typedef struct {
-	cap_map *_internal_pointer;
 	CAP_GENERIC_TYPE_PTR _key;
 	void *_value;
-	struct cap_map *_forward[CAP_MAP_MAX_SKIPLIST_SIZE];
+	size_t _current_index;
+	cap_map *current_element;
 } cap_map_iterator;
 
 bool _cap_map_is_seeded = false;
@@ -181,7 +182,12 @@ static cap_map_iterator *cap_map_iterator_init(cap_map *map){
 		fprintf(stderr, "memory allocation failue\n");
 		return NULL;
 	}
-	iterator->_internal_pointer = map;
+	if (!map){
+		iterator->_current_index = 0;
+		map->_key[0]=NULL;
+		map->_value=NULL;
+	}
+	iterator->_current_index = map->_forward[0];
 	iterator->_key = map->_key[0];
 	iterator->_value = map->_value;
 	return iterator;
@@ -357,3 +363,5 @@ static void _cap_map_deep_free_node(cap_map *map) {
 }
 
 #endif // !CAP_MAP_H
+
+
