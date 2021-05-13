@@ -44,6 +44,7 @@ typedef struct {
 typedef struct {
 	cap_vector *_internal_pointer;
 	size_t _current_index;
+	size_t _capacity;
 	void *data;
 } cap_vector_iterator;
 #endif // !DOXYGEN_SHOULD_SKIP_THIS
@@ -376,6 +377,7 @@ static cap_vector_iterator *cap_vector_iterator_init(cap_vector *vector) {
 		return NULL;
 	}
 	iterator->_current_index = 0;
+	iterator->_capacity = vector->_capacity;
 	iterator->_internal_pointer = vector;
 	iterator->data = vector->_internal_buffer[0];
 	return iterator;
@@ -600,20 +602,30 @@ static void cap_vector_iterator_insert(cap_vector_iterator *iterator,
 
 static void cap_vector_iterator_remove(cap_vector_iterator *iterator) {
 	assert(iterator != NULL);
+	if (!iterator->_internal_pointer->_size) return;
+	if (iterator->_internal_pointer->_size ==
+	    iterator->_current_index + 1) {
+		iterator->data = NULL;
+		iterator->_internal_pointer->_size--;
+		return;
+	}
 	memmove(&iterator->_internal_pointer
 		     ->_internal_buffer[iterator->_current_index],
 		&iterator->_internal_pointer
 		     ->_internal_buffer[iterator->_current_index + 1],
 		sizeof(CAP_GENERIC_TYPE_PTR) *
 		    (iterator->_internal_pointer->_capacity -
-		     iterator->_current_index));
+		     (iterator->_current_index + 1)));
 	iterator->data = iterator->_internal_pointer
 			     ->_internal_buffer[iterator->_current_index];
+	iterator->_internal_pointer->_size--;
 }
 
 static void cap_vector_iterator_increment(cap_vector_iterator *iterator) {
 	assert(iterator != NULL);
-	if (iterator->_internal_pointer->_size < iterator->_current_index) {
+	if ((!iterator->_internal_pointer->_size) ||
+	    iterator->_internal_pointer->_size ==
+		iterator->_current_index + 1) {
 		iterator->data = NULL;
 		return;
 	}

@@ -257,6 +257,8 @@ static bool cap_list_remove_if(cap_list *d_list, bool (*predicate_fn)(void *)) {
 	_cap_list_node *iter_node = d_list->_head_node->next;
 	size_t num_removed = 0;
 	do {
+		_cap_list_node *next_node = NULL;
+		if (iter_node->next) next_node = iter_node->next;
 		if (iter_node->data != NULL) {
 			if (predicate_fn(iter_node->data)) {
 				iter_node->previous->next = iter_node->next;
@@ -265,7 +267,7 @@ static bool cap_list_remove_if(cap_list *d_list, bool (*predicate_fn)(void *)) {
 				num_removed++;
 			}
 		}
-		iter_node = iter_node->next;
+		iter_node = next_node;
 	} while (iter_node != NULL && iter_node->next != NULL);
 	return (num_removed != 0);
 }
