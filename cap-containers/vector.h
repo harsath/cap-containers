@@ -406,6 +406,7 @@ static void cap_vector_deep_free(cap_vector *vector) {
 
 static void cap_vector_free(cap_vector *vector) {
 	assert(vector != NULL);
+	free(vector->_internal_buffer);
 	free(vector);
 }
 
