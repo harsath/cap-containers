@@ -100,7 +100,7 @@ void test_list(void) {
 			: false;
 		CAP_ASSERT_TRUE(find_if_predicate_two_is_address_correct,
 				"LIST find_if");
-		cap_list_remove_if(d_list_two, predicate_two);
+		cap_list_remove_if_deep(d_list_two, predicate_two);
 		CAP_ASSERT_TRUE(cap_list_find_if(d_list_two, predicate_two) ==
 				    NULL,
 				"LIST find_if");
