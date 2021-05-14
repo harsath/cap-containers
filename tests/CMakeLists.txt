@@ -17,6 +17,7 @@ set(
 	test-forward-list.c
 	test-hash-table-separate-chaining.c
 	test-map.c
+	test-circular-queue.c
 )
 add_executable(
 	${PROJECT_NAME}

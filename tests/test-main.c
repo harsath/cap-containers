@@ -8,6 +8,7 @@ extern void test_stack(void);
 extern void test_forward_list(void);
 extern void test_hash_table_separate_chain(void);
 extern void test_map(void);
+extern void test_circular_queue(void);
 
 int main(int argc, const char *const argv[]) {
 	test_dynamic_queue();
@@ -18,6 +19,7 @@ int main(int argc, const char *const argv[]) {
 	test_forward_list();
 	test_hash_table_separate_chain();
 	test_map();
+	test_circular_queue();
 
 	return 0;
 }
