@@ -201,11 +201,13 @@ cap_fixed_queue_remaining_space(const cap_fixed_queue *fixed_queue) {
 }
 
 static bool cap_fixed_queue_push(cap_fixed_queue *fixed_queue, void *data) {
-	assert((fixed_queue != NULL) && (data != NULL));
+	assert(fixed_queue != NULL);
 	if (fixed_queue->_current_size >= fixed_queue->_capacity) return false;
-	if (_cap_list_push_front(fixed_queue->_internal_list, data))
+	if (_cap_list_push_front(fixed_queue->_internal_list, data)) {
 		fixed_queue->_current_size++;
-	return true;
+		return true;
+	}
+	return false;
 }
 
 static void *cap_fixed_queue_pop(cap_fixed_queue *fixed_queue) {
@@ -224,6 +226,7 @@ static void *cap_fixed_queue_front(cap_fixed_queue *fixed_queue) {
 
 static void *cap_fixed_queue_back(cap_fixed_queue *fixed_queue) {
 	assert(fixed_queue != NULL);
+	if (fixed_queue->_current_size <= 0) return NULL;
 	return _cap_list_front(fixed_queue->_internal_list);
 }
 

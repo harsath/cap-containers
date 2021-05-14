@@ -191,11 +191,15 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 		}
 	}
 	cap_map *new_node = (cap_map *)CAP_ALLOCATOR(cap_map, 1);
-	if (!new_node) return -1;
+	if (!new_node) {
+		fprintf(stderr, "memory allocation failur\n");
+		return -1;
+	}
 	new_node->_value = value;
 	new_node->_key =
 	    (unsigned char *)CAP_ALLOCATOR(unsigned char, map->_key_size);
 	if (!new_node->_key) {
+		free(new_node);
 		fprintf(stderr, "memory allocation failur\n");
 		return -1;
 	}
@@ -203,9 +207,9 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 	new_node->_height = _cap_map_get_rand_level(map->_height);
 	new_node->_key_size = map->_key_size;
 	++map->_size;
-	for (int i = map->_height - 1; i > new_node->_height; --i)
+	for (int i = CAP_MAP_MAX_SKIPLIST_SIZE - 1; i > new_node->_height; --i)
 		new_node->_forward[i] = NULL;
-	for (int i = map->_height - 1; i >= 0; --i) {
+	for (int i = new_node->_height - 1; i >= 0; --i) {
 		new_node->_forward[i] = previous[i]->_forward[i];
 		previous[i]->_forward[i] = new_node;
 	}
@@ -263,10 +267,11 @@ static bool cap_map_empty(cap_map *map) {
 
 static int cap_map_remove(cap_map *map, void *key) {
 	assert(map != NULL && key != NULL);
+	if (!map->_size) return -1;
 	cap_map *current_node = map;
 	int current_level = map->_height - 1;
 	cap_map *previous[CAP_MAP_MAX_SKIPLIST_SIZE];
-	int cmp;
+	int cmp = 1;
 	while (current_level >= 0) {
 		previous[current_level] = current_node;
 		if (current_node->_forward[current_level] == NULL) {
@@ -283,10 +288,10 @@ static int cap_map_remove(cap_map *map, void *key) {
 		}
 	}
 	if (!cmp) {
-		cap_map *node_to_remove = current_node->_forward[0];
-		for (int i = node_to_remove->_height; i >= 0; --i)
-			previous[i]->_forward[i] = node_to_remove->_forward[i];
-		_cap_map_free_node(node_to_remove);
+		cap_map *free_me = current_node->_forward[0];
+		for (int i = CAP_MAP_MAX_SKIPLIST_SIZE - 1; i >= 0; --i)
+			previous[i]->_forward[i] = free_me->_forward[i];
+		_cap_map_free_node(free_me);
 		map->_size--;
 		return 0;
 	}
@@ -295,9 +300,13 @@ static int cap_map_remove(cap_map *map, void *key) {
 
 static void cap_map_free(cap_map *map) {
 	assert(map != NULL);
+	if (!map->_size) {
+		free(map);
+		return;
+	}
 	cap_map *free_me = map;
 	map = map->_forward[0];
-	for (int i = map->_height - 1; i >= 0; --i) {
+	for (int i = free_me->_size - 1; i >= 0; --i) {
 		_cap_map_free_node(free_me);
 		free_me = map;
 		map = map->_forward[0];
@@ -306,6 +315,10 @@ static void cap_map_free(cap_map *map) {
 
 static void cap_map_deep_free(cap_map *map) {
 	assert(map != NULL);
+	if (!map->_size) {
+		free(map);
+		return;
+	}
 	cap_map *free_me = map;
 	map = map->_forward[0];
 	for (int i = map->_height - 1; i >= 0; --i) {
@@ -322,8 +335,10 @@ static int _cap_map_get_rand_level(int max_number) {
 }
 
 static void _cap_map_free_node(cap_map *map) {
-	if (map)
+	if (map) {
 		if (map->_key) free(map->_key);
+		free(map);
+	}
 }
 
 static void _cap_map_deep_free_node(cap_map *map) {
