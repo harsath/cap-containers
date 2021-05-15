@@ -35,6 +35,7 @@
 typedef struct {
 	size_t _capacity;
 	size_t _head_index;
+	int _size;
 	size_t _tail_index;
 	CAP_GENERIC_TYPE_PTR *_internal_buffer;
 } cap_circular_queue;
@@ -67,6 +68,14 @@ static void cap_circular_queue_push(cap_circular_queue *cqueue, void *item);
  * @param cqueue cap_circular_queue container
  */
 static void *cap_circular_queue_pop(cap_circular_queue *cqueue);
+/**
+ * Query the size of the cap_circular_queue container. Returns the remaining
+ * elements before which the call to 'pop' returns NULL
+ *
+ * @param cqueue cap_circular_queue container
+ * @return Size of the container
+ */
+static int cap_circular_queue_size(cap_circular_queue *cqueue);
 /**
  * Free the cap_circular_queue. This doesn't touch the memory of the underlying
  * element which this container holds, but only frees the memory which the
@@ -102,6 +111,7 @@ static cap_circular_queue *cap_circular_queue_init(size_t capacity_of_queue) {
 	}
 	cqueue->_head_index = 0;
 	cqueue->_tail_index = 0;
+	cqueue->_size = 0;
 	return cqueue;
 }
 
@@ -110,13 +120,21 @@ static void cap_circular_queue_push(cap_circular_queue *cqueue, void *item) {
 	cqueue->_internal_buffer[cqueue->_tail_index] =
 	    (CAP_GENERIC_TYPE_PTR)item;
 	cqueue->_tail_index = (cqueue->_tail_index + 1) % cqueue->_capacity;
+	cqueue->_size += 1;
 }
 
 static void *cap_circular_queue_pop(cap_circular_queue *cqueue) {
 	assert(cqueue != NULL);
+	if (!cqueue->_size) return NULL;
 	void *returner = cqueue->_internal_buffer[cqueue->_head_index];
 	cqueue->_head_index = (cqueue->_head_index + 1) % cqueue->_capacity;
+	cqueue->_size -= 1;
 	return returner;
+}
+
+static int cap_circular_queue_size(cap_circular_queue *cqueue) {
+	assert(cqueue != NULL);
+	return cqueue->_size;
 }
 
 static void cap_circular_queue_free(cap_circular_queue *cqueue) {
