@@ -1,5 +1,5 @@
 #include "internal/test-helper.h"
-#include <map.h>
+#include "../cap-containers/map.h"
 
 static int compare_fn_int(void *x, void *y) {
 	if (*(int *)x > *(int *)y)
@@ -7,6 +7,22 @@ static int compare_fn_int(void *x, void *y) {
 	else if (*(int *)x < *(int *)y)
 		return -1;
 	return 0;
+}
+
+bool predicate_fn_one(void *key) {
+	if (*(int *)key == 20) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+bool predicate_fn_two(void *key) {
+	if (*(int *)key == 30) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 void test_map(void) {
@@ -66,5 +82,97 @@ void test_map(void) {
 		CAP_ASSERT_FALSE(cap_map_empty(map),
 				 "MAP empty checks after operations");
 		cap_map_free(map);
+	}
+	{//Tests on iterators
+
+		cap_map *map = cap_map_init(4,(void *)3);
+		int key_one = 1;
+		float value_one = 10.0f;
+		int key_two = 2;
+		float value_two = 20.0f;
+		int key_three = 3;
+		float value_three = 30.0f;
+		int key_four = 4;
+		float value_four = 40.0f;
+		int key_five = 5;
+		float value_five = 50.0f;
+		cap_map_insert(map, &key_one, &value_one);
+		cap_map_insert(map, &key_two, &value_two);
+		cap_map_insert(map, &key_three, &value_three);
+		cap_map_insert(map, &key_four, &value_four);
+		cap_map_insert(map, &key_five, &value_five);
+
+		cap_map_iterator *map_iterator =
+		    cap_map_iterator_init(map);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_one,
+				"MAP Iterator init check");
+		cap_map_iterator_decrement(map_iterator);
+		CAP_ASSERT_TRUE(map_iterator->key == NULL,
+				"MAP Iterator dec NULL check");
+		cap_map_iterator_increment(map_iterator);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_one,
+				"MAP Iterator data check after error");
+		cap_map_iterator_increment(map_iterator);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_two,
+				"MAP Iterator incr");
+		cap_map_iterator_increment(map_iterator); 
+		cap_map_iterator_decrement(map_iterator); 
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_two,
+				"MAP Iterator incr");
+		CAP_ASSERT_TRUE(*(int *)cap_map_iterator_next(
+				    map_iterator) ==  key_three &&
+				    *(int *)map_iterator->key == key_two,
+				"MAP Iterator next");
+		CAP_ASSERT_TRUE(*(int *)cap_map_iterator_previous(
+				    map_iterator) == key_one &&
+				    *(int *)map_iterator->key == key_two,
+				"MAP Iterator previous");
+		cap_map_iterator *tmp_iter =
+		    cap_map_iterator_init(map);
+		cap_map_iterator_increment(tmp_iter); // two
+		CAP_ASSERT_EQ(*(int *)tmp_iter->key, key_two,
+			      "MAP increment after init");
+		cap_map_iterator_free(tmp_iter);
+		CAP_ASSERT_TRUE(cap_map_iterator_equals_predicate(
+				    map_iterator, predicate_fn_one),
+				"VECTOR Iterator true prediate");
+		CAP_ASSERT_FALSE(cap_map_iterator_equals_predicate(
+				     map_iterator, predicate_fn_two),
+				 "VECTOR Iterator false predicate");
+		cap_map_iterator_increment(map_iterator); //key_three
+		cap_map_iterator *tmp_begin_iter = cap_map_begin(map);
+		cap_map_iterator *tmp_end_iter = cap_map_end(map);
+		CAP_ASSERT_TRUE(*(int *)tmp_end_iter->key ==
+					*(int *)cap_map_back(map) &&
+				    *(int *)tmp_begin_iter->key ==
+					*(int *)cap_map_front(map) &&
+				    tmp_end_iter->_current_index ==
+					cap_map_size(map) - 1 &&
+				    tmp_begin_iter->_current_index == 0,
+				"VECTOR Iterator begin & end checks");
+		cap_map_iterator_free(tmp_begin_iter);
+		cap_map_iterator_free(tmp_end_iter);
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_three,
+			      "MAP Iterator before remove");
+		
+		cap_map_remove(
+		    map,(int* )key_three); // remove key_three, currently key_four
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_four,
+			      "MAP Iterator after removing only element");
+		CAP_ASSERT_EQ(*(int *)cap_map_iterator_next(map_iterator),
+			      key_five, "MAP Iterator next after remove");
+		cap_map_iterator_increment(map_iterator); // key_five
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_five,
+			      "MAP Iterator remove check");
+		int key_seven = 70;
+		float value_seven = 70.0f;
+		size_t _tmp_current_index = map_iterator->_current_index;
+		cap_map_insert(map, &key_seven, &value_seven);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_seven &&
+				    map_iterator->_current_index ==
+					_tmp_current_index,
+				"MAP Iterator insert");
+		cap_map_free(map);
+		cap_map_iterator_free(map_iterator);
 	}
 }
