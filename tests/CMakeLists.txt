@@ -18,6 +18,7 @@ set(
 	test-hash-table-separate-chaining.c
 	test-map.c
 	test-circular-queue.c
+	test-arena-allocator.c
 )
 add_executable(
 	${PROJECT_NAME}
