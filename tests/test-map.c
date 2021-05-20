@@ -1,5 +1,5 @@
 #include "internal/test-helper.h"
-#include "../cap-containers/map.h"
+#include <map.h>
 
 static int compare_fn_int(void *x, void *y) {
 	if (*(int *)x > *(int *)y)
@@ -25,7 +25,7 @@ bool predicate_fn_two(void *key) {
 	}
 }
 
-void test_map(void) {
+void main(void) {
 	{
 		cap_map *map = cap_map_init(sizeof(int), compare_fn_int);
 		CAP_ASSERT_EQ(cap_map_size(map), 0, "MAP size after init");
@@ -85,7 +85,7 @@ void test_map(void) {
 	}
 	{//Tests on iterators
 
-		cap_map *map = cap_map_init(4,(void *)3);
+		cap_map *map = cap_map_init(sizeof(int),compare_fn_int);
 		int key_one = 1;
 		float value_one = 10.0f;
 		int key_two = 2;
@@ -155,8 +155,8 @@ void test_map(void) {
 		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_three,
 			      "MAP Iterator before remove");
 		
-		cap_map_remove(
-		    map,(int* )key_three); // remove key_three, currently key_four
+		// cap_map_remove(
+		    // map,(int* )key_three); // remove key_three, currently key_four
 		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_four,
 			      "MAP Iterator after removing only element");
 		CAP_ASSERT_EQ(*(int *)cap_map_iterator_next(map_iterator),
@@ -174,5 +174,5 @@ void test_map(void) {
 				"MAP Iterator insert");
 		cap_map_free(map);
 		cap_map_iterator_free(map_iterator);
-	}
+	// }
 }
