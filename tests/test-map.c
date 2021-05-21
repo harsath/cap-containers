@@ -25,7 +25,7 @@ bool predicate_fn_two(void *key) {
 	}
 }
 
-void main(void) {
+void test_main(void) {
 	{
 		cap_map *map = cap_map_init(sizeof(int), compare_fn_int);
 		CAP_ASSERT_EQ(cap_map_size(map), 0, "MAP size after init");
@@ -184,5 +184,5 @@ void main(void) {
 				"MAP Iterator insert");
 		cap_map_free(map);
 		cap_map_iterator_free(map_iterator);
-	// }
+	}
 }
