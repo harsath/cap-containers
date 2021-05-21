@@ -17,14 +17,16 @@ set(
 	test-forward-list.c
 	test-hash-table-separate-chaining.c
 	test-map.c
+	test-circular-queue.c
+	test-arena-allocator.c
 )
 add_executable(
 	${PROJECT_NAME}
 	${SOURCE_FILES}
 )
 if(LOCAL_DEV)
-	set(CMAKE_C_FLAGS "-O2 -Wall -g3 -fsanitize=address")
-	set(CMAKE_CXX_FLAGS "-O2 -Wall -g3 -fsanitize=address")
+	set(CMAKE_C_FLAGS "-O2 -Wall -g3 -fno-omit-frame-pointer -fsanitize=address")
+	set(CMAKE_CXX_FLAGS "-O2 -Wall -g3 -fno-omit-frame-pointer -fsanitize=address")
 else()
 	set(CMAKE_C_FLAGS "-O2 -g3 -Wall")
 	set(CMAKE_CXX_FLAGS "-O2 -g3 -Wall")

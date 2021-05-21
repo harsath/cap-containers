@@ -236,33 +236,31 @@ static void *cap_forward_list_find_if(cap_forward_list *f_list,
 static bool cap_forward_list_remove_if(cap_forward_list *f_list,
 				       bool (*predicate_fn)(void *)) {
 	assert(f_list != NULL && predicate_fn != NULL);
-	_cap_flist_node *current_node = f_list->head;
-	_cap_flist_node *prev_node = NULL;
-	size_t num_removed = 0;
-	while (current_node != NULL) {
-		if (current_node->data != NULL &&
-		    predicate_fn(current_node->data)) {
-			if (prev_node == NULL && current_node->next == NULL) {
-				f_list->head = NULL;
-				f_list->size = 0;
-				return true;
-			} else if (prev_node == NULL &&
-				   current_node->next != NULL) {
-				f_list->head = current_node->next;
-				f_list->size--;
-				free(current_node);
-			} else {
-				prev_node->next = current_node->next;
-				f_list->size--;
-				free(current_node);
-			}
-			num_removed += 1;
-		} else {
-			prev_node = current_node;
-			current_node = current_node->next;
-		}
+	if (!f_list->size) return false;
+	bool return_now = false;
+CHECK_AGAIN:
+	if (f_list->head->data != NULL && predicate_fn(f_list->head->data)) {
+		f_list->head = f_list->head->next;
+		f_list->size--;
+		return_now = true;
+		goto CHECK_AGAIN;
 	}
-	return (num_removed != 0);
+	if (return_now) return true;
+	_cap_flist_node *iter_node = f_list->head;
+	bool removed_some = false;
+	while (iter_node->next != NULL) {
+		if (iter_node->next->data != NULL &&
+		    predicate_fn(iter_node->next->data)) {
+			_cap_flist_node *free_me = iter_node->next;
+			iter_node->next = iter_node->next->next;
+			f_list->size--;
+			removed_some = true;
+			free(free_me);
+			continue;
+		}
+		iter_node = iter_node->next;
+	}
+	return removed_some;
 }
 
 #endif // !CAP_FORWARD_LIST_H

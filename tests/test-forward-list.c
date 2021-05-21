@@ -2,13 +2,11 @@
 #include "internal/test-helper.h"
 
 bool flist_predicate_fn_one(void* data){
-	if(*(int*)data == 20){ return true; }
-	return false;
+	return *(int*)data == 20;
 }
 
 bool flist_predicate_fn_two(void* data){
-	if(*(int*)data == 40){ return true; }
-	return false;
+	return *(int*)data == 40;
 }
 
 bool flist_invalid_predicate_fn(void* data){
@@ -50,6 +48,7 @@ void test_forward_list(void){
 		CAP_ASSERT_TRUE(invalid_ptr == NULL, "FORWARD_LIST invalid ptr find_if");
 		// [40] -> [30] -> [10]
 		bool remove_if = cap_forward_list_remove_if(list_one, flist_predicate_fn_one);
+		CAP_ASSERT_EQ(*(int*)cap_forward_list_front(list_one), four, "FORWARD_LIST front after remove");
 		CAP_ASSERT_TRUE(remove_if && 
 				cap_forward_list_size(list_one) == 3 &&
 				*(int*)cap_forward_list_front(list_one) == four, "FORWARD_LIST remove_if");

@@ -131,6 +131,20 @@ static void *cap_list_back(const cap_list *list);
  */
 static bool cap_list_remove_if(cap_list *list, bool (*predicate_fn)(void *));
 
+/**
+ * Iterates the cap_list container and remove all occurance of the element which
+ * matches the predicate function and free() the data (assuming the element is
+ * dynamically allocated)
+ *
+ * @param list cap_list container
+ * @param predicate_fn Predicate function which we pass the elements into,
+ * implementation ensures that predicate_fn will never gets a NULL as param.
+ * @return True if any element is removed, False if the given predicate_fn does
+ * not match any of the elements
+ */
+static bool cap_list_remove_if_deep(cap_list *list,
+				    bool (*predicate_fn)(void *));
+
 // Memory:
 /**
  * Frees the cap_list container object and also frees the elements which it
@@ -257,6 +271,8 @@ static bool cap_list_remove_if(cap_list *d_list, bool (*predicate_fn)(void *)) {
 	_cap_list_node *iter_node = d_list->_head_node->next;
 	size_t num_removed = 0;
 	do {
+		_cap_list_node *next_node = NULL;
+		if (iter_node->next) next_node = iter_node->next;
 		if (iter_node->data != NULL) {
 			if (predicate_fn(iter_node->data)) {
 				iter_node->previous->next = iter_node->next;
@@ -265,7 +281,29 @@ static bool cap_list_remove_if(cap_list *d_list, bool (*predicate_fn)(void *)) {
 				num_removed++;
 			}
 		}
-		iter_node = iter_node->next;
+		iter_node = next_node;
+	} while (iter_node != NULL && iter_node->next != NULL);
+	return (num_removed != 0);
+}
+
+static bool cap_list_remove_if_deep(cap_list *d_list,
+				    bool (*predicate_fn)(void *)) {
+	assert((d_list != NULL) && (predicate_fn != NULL));
+	_cap_list_node *iter_node = d_list->_head_node->next;
+	size_t num_removed = 0;
+	do {
+		_cap_list_node *next_node = NULL;
+		if (iter_node->next) next_node = iter_node->next;
+		if (iter_node->data != NULL) {
+			if (predicate_fn(iter_node->data)) {
+				iter_node->previous->next = iter_node->next;
+				iter_node->next->previous = iter_node->previous;
+				if (iter_node->data) free(iter_node->data);
+				if (iter_node) free(iter_node);
+				num_removed++;
+			}
+		}
+		iter_node = next_node;
 	} while (iter_node != NULL && iter_node->next != NULL);
 	return (num_removed != 0);
 }
