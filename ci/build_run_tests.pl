@@ -10,9 +10,9 @@ sub run_tests {
 	if(-d $build_dir_name){ print "\n\n[ERROR]: Build dir already exists, remove first\n\n"; exit(1); }
 	mkdir($build_dir_name);
 	chdir($build_dir_name);
-	system(qq/CC=gcc-9 && CXX=g++-9 cmake .. && make/);
+	system "CC=gcc-9 && CXX=g++-9 cmake -DLOCAL_DEV=1 .. && make";
 	print "\n\n[INFO] Running tests\n\n";
-	system(qq/.\/cap_containers_test/);
+	system "./cap_containers_test";
 }
 
 run_tests();
