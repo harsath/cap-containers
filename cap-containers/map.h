@@ -218,7 +218,7 @@ static void cap_map_free(cap_map *map);
  */
 static void cap_map_deep_free(cap_map *map);
 /**
- * Check if the cap_map is empry or not
+ * Check if the cap_map is empty or not
  *
  * @param map cap_map container
  * @return True if the container is empty, False if not.

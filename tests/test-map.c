@@ -9,7 +9,7 @@ static int compare_fn_int(void *x, void *y) {
 	return 0;
 }
 
-bool predicate_fn_one(void *key) {
+static bool predicate_fn_one(void *key) {
 	if (*(int *)key == 20) {
 		return true;
 	} else {
@@ -17,7 +17,7 @@ bool predicate_fn_one(void *key) {
 	}
 }
 
-bool predicate_fn_two(void *key) {
+static bool predicate_fn_two(void *key) {
 	if (*(int *)key == 30) {
 		return true;
 	} else {
@@ -25,7 +25,7 @@ bool predicate_fn_two(void *key) {
 	}
 }
 
-void test_main(void) {
+void test_map(void) {
 	{
 		cap_map *map = cap_map_init(sizeof(int), compare_fn_int);
 		CAP_ASSERT_EQ(cap_map_size(map), 0, "MAP size after init");
