@@ -1,5 +1,6 @@
 #include "internal/test-helper.h"
 #include <arena_allocator.h>
+#include <string.h>
 
 void test_arena_allocator(void) {
 	cap_arena_allocator *allocator = cap_arena_allocator_init(10);
