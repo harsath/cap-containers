@@ -91,8 +91,8 @@ static int cap_map_height(cap_map *map);
  *
  * @param vector cap_map container for which we need to create a iterator
  * @return Allocated cap_map_iterator object for iterating the container
- * which is given in the parameter 
-*/
+ * which is given in the parameter
+ */
 static cap_map_iterator *cap_map_iterator_init(cap_map *map);
 /**
  * Insert a key-value pair onto the cap_map container.
@@ -146,11 +146,11 @@ static int (*cap_map_compare_fn(cap_map *map))(void *, void *);
  */
 static bool cap_vector_iterator_equals_predicate(cap_map_iterator *iterator,
 						 bool (*predicate_fn)(void *));
-/** 
+/**
  * Increment the Iterator to the next element on the container
  *
  * @param iterator cap_vector_iterator iterator object
-*/
+ */
 static void cap_map_iterator_increment(cap_map_iterator *iterator);
 /**
  * Decrement the Iterator object to the previous element on the container
@@ -252,7 +252,7 @@ static size_t cap_map_size(cap_map *map) {
 	return map->_size;
 }
 
-static int cap_map_remove(cap_map *map, void* key) {
+static int cap_map_remove(cap_map *map, void *key) {
 	assert(map != NULL && key != NULL);
 	if (!map->_size) return -1;
 	cap_map *current_node = map;
@@ -395,31 +395,39 @@ static bool cap_map_iterator_equals_predicate(cap_map_iterator *iter,
 
 static void cap_map_iterator_increment(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if (iterator->_current_element->_size < iterator->_current_index) {
+	if ((!iterator->_current_element->_height) || iterator->_current_element->_height ==
+	    iterator->_current_index + 1) {
 		iterator->value = NULL;
 		return;
 	}
+	
 	if (iterator->value != NULL) iterator->_current_index++;
-	iterator->value =
+
+	iterator->key = iterator->_current_element->_key;
+	iterator->value = iterator->_current_element->_value;
+	iterator->_current_element =
 	    iterator->_current_element->_forward[iterator->_current_index];
 }
 
 static void cap_map_iterator_decrement(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
 	if (iterator->_current_index <= 0) {
+		iterator->key = NULL;
 		iterator->value = NULL;
 		return;
 	}
-	if (iterator->value != NULL) {
-		iterator->_current_index--;
-		iterator->value =
+
+	if (iterator->value != NULL) iterator->_current_index--;
+	
+	iterator->value = iterator->_current_element->_value;
+	iterator->_current_element =
 	    iterator->_current_element->_forward[iterator->_current_index];
-	}
 }
 
 static void *cap_map_iterator_next(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if (iterator->_current_element->_size < (iterator->_current_index + 1))
+	if (iterator->_current_element->_height <
+	    (iterator->_current_index + 1))
 		return NULL;
 	return iterator->_current_element
 	    ->_forward[(iterator->_current_index + 1)];
@@ -452,8 +460,7 @@ static void *cap_map_front(cap_map *map) {
 
 static void *cap_map_back(cap_map *map) {
 	assert(map != NULL);
-	return map->_size == 0 ? NULL
-				  : map->_forward[map->_size - 1];
+	return map->_size == 0 ? NULL : map->_forward[map->_size - 1];
 }
 
 static void cap_map_iterator_free(cap_map_iterator *iterator) {
@@ -503,7 +510,7 @@ static int _cap_map_get_rand_level(int max_number) {
 }
 
 static void _cap_map_free_node(cap_map *map) {
-	if (map){
+	if (map) {
 		if (map->_key) free(map->_key);
 		free(map);
 	}

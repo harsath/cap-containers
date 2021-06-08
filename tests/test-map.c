@@ -165,8 +165,8 @@ void test_map(void) {
 		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_three,
 			      "MAP Iterator before remove");
 		
-		// cap_map_remove(
-		    // map,(int* )key_three); // remove key_three, currently key_four
+		cap_map_remove(
+		    map,(int* )key_three); // remove key_three, currently key_four
 		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_four,
 			      "MAP Iterator after removing only element");
 		CAP_ASSERT_EQ(*(int *)cap_map_iterator_next(map_iterator),
