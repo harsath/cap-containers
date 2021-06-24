@@ -336,7 +336,7 @@ static int _cap_map_get_rand_level(int max_number) {
 
 static void _cap_map_free_node(cap_map *map) {
 	if (map) {
-		if (map->_key) free(map->_key);
+		free(map->_key);
 		free(map);
 	}
 }
