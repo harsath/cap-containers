@@ -299,8 +299,8 @@ static cap_map_iterator *cap_map_iterator_init(cap_map *map) {
 		return NULL;
 	}
 	iterator->_current_element = map->_forward[0];
-	iterator->key = map->_forward[0]->_key;
-	iterator->value = map->_forward[0]->_value;
+	iterator->key = iterator->_current_element->_key;
+	iterator->value = iterator->_current_element->_value;
 	return iterator;
 }
 
@@ -395,18 +395,25 @@ static bool cap_map_iterator_equals_predicate(cap_map_iterator *iter,
 
 static void cap_map_iterator_increment(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if ((!iterator->_current_element->_height) || iterator->_current_element->_height ==
-	    iterator->_current_index + 1) {
+	if ((!iterator->_current_element->_height) ||iterator->_current_element->_size == iterator->_current_index + 1) {
+		iterator->key = NULL;
 		iterator->value = NULL;
 		return;
 	}
-	
-	if (iterator->value != NULL) iterator->_current_index++;
-
-	iterator->key = iterator->_current_element->_key;
-	iterator->value = iterator->_current_element->_value;
-	iterator->_current_element =
-	    iterator->_current_element->_forward[iterator->_current_index];
+	if(iterator -> value != NULL){
+		
+	}
+	if (iterator->_current_index > 0) {
+		iterator->_current_index++;
+		iterator->key = iterator->_current_element->_forward[0]->_key;
+		iterator->value =
+		    iterator->_current_element->_forward[0]->_value;
+	} 
+	else  {
+		iterator->_current_index++;
+		iterator->key = iterator->_current_element->_key;
+		iterator->value = iterator->_current_element->_value;
+	}
 }
 
 static void cap_map_iterator_decrement(cap_map_iterator *iterator) {
@@ -416,18 +423,17 @@ static void cap_map_iterator_decrement(cap_map_iterator *iterator) {
 		iterator->value = NULL;
 		return;
 	}
-
-	if (iterator->value != NULL) iterator->_current_index--;
-	
-	iterator->value = iterator->_current_element->_value;
-	iterator->_current_element =
-	    iterator->_current_element->_forward[iterator->_current_index];
+	if (iterator->_current_index > 0) {
+		iterator->_current_index--;
+		iterator->key = iterator->_current_element->_forward[0]->_key;
+		iterator->value =
+		    iterator->_current_element->_forward[0]->_value;
+	} 
 }
 
 static void *cap_map_iterator_next(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if (iterator->_current_element->_height <
-	    (iterator->_current_index + 1))
+	if (iterator->_current_element->_size < (iterator->_current_index + 1))
 		return NULL;
 	return iterator->_current_element
 	    ->_forward[(iterator->_current_index + 1)];
