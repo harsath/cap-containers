@@ -184,7 +184,7 @@ void test_vector(void) {
 		cap_vector_iterator_free(tmp_iter);
 		CAP_ASSERT_TRUE(cap_vector_iterator_equals_predicate(
 				    vector_iterator, predicate_fn_one),
-				"VECTOR Iterator true prediate");
+				"VECTOR Iterator true predicate");
 		CAP_ASSERT_FALSE(cap_vector_iterator_equals_predicate(
 				     vector_iterator, predicate_fn_two),
 				 "VECTOR Iterator false predicate");

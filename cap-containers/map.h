@@ -48,6 +48,7 @@ typedef struct {
 	CAP_GENERIC_TYPE_PTR key;
 	void *value;
 	size_t _current_index;
+	cap_map *_original_reference;
 	cap_map *_current_element;
 } cap_map_iterator;
 
@@ -87,9 +88,9 @@ static int cap_map_remove(cap_map *map, void *key);
  */
 static int cap_map_height(cap_map *map);
 /**
- * Initilize an Iterator object for iterating over a cap_map container
+ * Initialize an Iterator object for iterating over a cap_map container
  *
- * @param vector cap_map container for which we need to create a iterator
+ * @param cap_map container for which we need to create a iterator
  * @return Allocated cap_map_iterator object for iterating the container
  * which is given in the parameter
  */
@@ -144,20 +145,14 @@ static int (*cap_map_compare_fn(cap_map *map))(void *, void *);
  * @param predicate_fn Predicate function
  * @return Returns True, if predicate_fn says so, if not returns False.
  */
-static bool cap_vector_iterator_equals_predicate(cap_map_iterator *iterator,
+static bool cap_map_iterator_equals_predicate(cap_map_iterator *iterator,
 						 bool (*predicate_fn)(void *));
 /**
  * Increment the Iterator to the next element on the container
  *
- * @param iterator cap_vector_iterator iterator object
- */
-static void cap_map_iterator_increment(cap_map_iterator *iterator);
-/**
- * Decrement the Iterator object to the previous element on the container
- *
  * @param iterator cap_map_iterator iterator object
  */
-static void cap_map_iterator_decrement(cap_map_iterator *iterator);
+static void cap_map_iterator_increment(cap_map_iterator *iterator);
 /**
  * Peek into the next element of the container without incrementing the iterator
  *
@@ -165,35 +160,24 @@ static void cap_map_iterator_decrement(cap_map_iterator *iterator);
  * @return Next element of the container, if the iterator is at the last
  * element, it returns NULL
  */
-static void *cap_vector_iterator_next(cap_map_iterator *iterator);
+static void *cap_map_iterator_next(cap_map_iterator *iterator);
 /**
- * Peek into the previous element of the container without decrementing the
- * iterator
+ * Get an iterator to the start of a cap_map container
  *
- * @param iterator cap_map_iterator iterator object
- * @return Previous element of the container, if the iterator is at the first
- * element, it returns NULL
- */
-static void *cap_vector_iterator_previous(cap_map_iterator *iterator);
-
-/**
- * Get an iterator to the start of a cap_vector container
- *
- * @param vector cap_map container
+ * @param iterator cap_map container
  * @return Allocated cap_map_iterator iterator which points to the first
  * element of the container
  */
 static cap_map_iterator *cap_map_begin(cap_map *map);
 /**
- * Get an iterator to the last element of the cap_map container
+ * Pop the element at the front of the cap_map container
  *
- * @param map cap_vector container
- * @return Allocated cap_map_iterator iterator which points to the last
- * element of the container
+ * This operation might hurt performance, since this involves moving every item
+ * from index 1 to index N
+ * @param map cap_map container
+ * @return First element, which is poped
  */
-static cap_map_iterator *cap_map_end(cap_map *map);
 static void *cap_map_front(cap_map *map);
-static void *cap_map_back(cap_map *map);
 /**
  * Free the cap_map_iterator iterator object. This operation doesn't free the
  * underlying element which this iterator points to but only the
@@ -298,7 +282,9 @@ static cap_map_iterator *cap_map_iterator_init(cap_map *map) {
 		fprintf(stderr, "memory allocation failue\n");
 		return NULL;
 	}
+	iterator->_original_reference = map;
 	iterator->_current_element = map->_forward[0];
+	iterator->_current_index = 0;
 	iterator->key = iterator->_current_element->_key;
 	iterator->value = iterator->_current_element->_value;
 	return iterator;
@@ -390,60 +376,29 @@ static int (*cap_map_compare_fn(cap_map *map))(void *, void *) {
 static bool cap_map_iterator_equals_predicate(cap_map_iterator *iter,
 					      bool (*predicate_fn)(void *)) {
 	assert(iter != NULL && predicate_fn != NULL);
-	return predicate_fn(iter->value);
+	return predicate_fn(iter->key);
 }
 
 static void cap_map_iterator_increment(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if ((!iterator->_current_element->_height) ||iterator->_current_element->_size == iterator->_current_index + 1) {
+	if (iterator->_original_reference->_size ==
+	    iterator->_current_index + 1) {
 		iterator->key = NULL;
 		iterator->value = NULL;
 		return;
 	}
-	if(iterator -> value != NULL){
-		
-	}
-	if (iterator->_current_index > 0) {
-		iterator->_current_index++;
-		iterator->key = iterator->_current_element->_forward[0]->_key;
-		iterator->value =
-		    iterator->_current_element->_forward[0]->_value;
-	} 
-	else  {
-		iterator->_current_index++;
-		iterator->key = iterator->_current_element->_key;
-		iterator->value = iterator->_current_element->_value;
-	}
+	iterator->_current_element = iterator->_current_element->_forward[0];
+	iterator->key = iterator->_current_element->_key;
+	iterator->value = iterator->_current_element->_value;
+	++iterator->_current_index;
 }
-
-static void cap_map_iterator_decrement(cap_map_iterator *iterator) {
-	assert(iterator != NULL);
-	if (iterator->_current_index <= 0) {
-		iterator->key = NULL;
-		iterator->value = NULL;
-		return;
-	}
-	if (iterator->_current_index > 0) {
-		iterator->_current_index--;
-		iterator->key = iterator->_current_element->_forward[0]->_key;
-		iterator->value =
-		    iterator->_current_element->_forward[0]->_value;
-	} 
-}
-
+ 
 static void *cap_map_iterator_next(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
-	if (iterator->_current_element->_size < (iterator->_current_index + 1))
+	if (iterator->_original_reference->_size ==
+	    iterator->_current_index + 1)
 		return NULL;
-	return iterator->_current_element
-	    ->_forward[(iterator->_current_index + 1)];
-}
-
-static void *cap_map_iterator_previous(cap_map_iterator *iterator) {
-	assert(iterator != NULL);
-	if ((iterator->_current_index - 1) < 0) return NULL;
-	return iterator->_current_element
-	    ->_forward[(iterator->_current_index - 1)];
+	return iterator->_current_element->_forward[0]->_key;
 }
 
 static cap_map_iterator *cap_map_begin(cap_map *map) {
@@ -451,22 +406,9 @@ static cap_map_iterator *cap_map_begin(cap_map *map) {
 	return cap_map_iterator_init(map);
 }
 
-static cap_map_iterator *cap_map_end(cap_map *map) {
-	assert(map != NULL);
-	cap_map_iterator *iterator = cap_map_iterator_init(map);
-	iterator->_current_index = (map->_size - 1);
-	iterator->value = map->_forward[iterator->_current_index];
-	return iterator;
-}
-
 static void *cap_map_front(cap_map *map) {
 	assert(map != NULL);
 	return map->_forward[0];
-}
-
-static void *cap_map_back(cap_map *map) {
-	assert(map != NULL);
-	return map->_size == 0 ? NULL : map->_forward[map->_size - 1];
 }
 
 static void cap_map_iterator_free(cap_map_iterator *iterator) {
