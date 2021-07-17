@@ -43,19 +43,75 @@ typedef struct cap_priority_queue {
 
 #endif // !DOXYGEN_SHOULD_SKIP_THIS
 
+/**
+ * Initilize a cap_priority_queue container object
+ *
+ * @param compare_fn Compare function for comparing two keys that will be passed
+ * into the container. If item_one is larger than item_two, positive value is
+ * returned but if it's lesser, negative value is returned and if they're equal,
+ * zero is returned.
+ * @return A priority queue container
+ */
 static cap_priority_queue *
 cap_priority_queue_init(int (*compare_fn)(void *item_one, void *item_two));
 
+/**
+ * Query the current size of cap_priority_queue container
+ *
+ * @param pqueue cap_priority_queue container
+ * @return Number of elements currently present at the container
+ */
 static int cap_priority_queue_size(cap_priority_queue *pqueue);
 
+/**
+ * Clear the size of the cap_priority_queue container
+ *
+ * @param pqueue cap_priority_queue container
+ */
 static void cap_priority_queue_clear(cap_priority_queue *pqueue);
 
+/**
+ * Get the element which will be poped from the container, but doesn't modify
+ * the container. Gives access to the current root of the priority queue.
+ *
+ * @param pqueue cap_priority_queue container
+ * @return Root item of the priority queue
+ */
 static void *cap_priority_queue_top(cap_priority_queue *pqueue);
 
+/**
+ * Pop the element at the root of the priority queue aka the one with the
+ * highest priority.
+ *
+ * @param pqueue cap_priority_queue container
+ * @return Root item that is poped from the container
+ */
 static void *cap_priority_queue_pop(cap_priority_queue *pqueue);
 
+/**
+ * Push an eleent onto the container
+ *
+ * If the capacity of the container is already reached, we will resize the
+ * container to twice the current size (Current-size * 2) and copy all the items
+ * over.
+ *
+ * @param pqueue cap_priority_queue container
+ * @param item Push the item onto the priority queue
+ * @return If there is no memory allocation error during resize operation,
+ * returns true, if there is an error, returns false
+ */
 static bool cap_priority_queue_push(cap_priority_queue *pqueue, void *item);
 
+/**
+ * Free the cap_priority_queue container.
+ *
+ * This is ideally called at the end of the usage where the container is no
+ * longer needed. This do not touch the element it container, but only frees the
+ * memory that is dynamically allocated for the container i.e. Doesn't free the
+ * items inside the container
+ *
+ * @param pqueue cap_priority_queue container
+ */
 static void cap_priority_queue_free(cap_priority_queue *pqueue);
 
 static void _cap_priority_queue_swim(cap_priority_queue *pqueue);
