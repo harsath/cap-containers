@@ -19,6 +19,7 @@ set(
 	test-map.c
 	test-circular-queue.c
 	test-arena-allocator.c
+	test-priority-queue.c
 )
 add_executable(
 	${PROJECT_NAME}
