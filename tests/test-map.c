@@ -9,6 +9,22 @@ static int compare_fn_int(void *x, void *y) {
 	return 0;
 }
 
+static bool predicate_fn_one(void *key) {
+	if (*(int *)key == 2) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+static bool predicate_fn_two(void *key) {
+	if (*(int *)key == 3) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
 void test_map(void) {
 	{
 		cap_map *map = cap_map_init(sizeof(int), compare_fn_int);
@@ -73,8 +89,77 @@ void test_map(void) {
 				 "MAP empty checks after operations");
 		cap_map_free(map);
 	}
-	{
-		cap_map *map = cap_map_init(sizeof(int), compare_fn_int);
+	{ //Tests on iterators
+		cap_map *map = cap_map_init(sizeof(int),compare_fn_int);
+		CAP_ASSERT_EQ(cap_map_size(map), 0, "MAP size after init");
+		CAP_ASSERT_EQ(cap_map_height(map), CAP_MAP_MAX_SKIPLIST_SIZE,
+			      "MAP height after init");
+		CAP_ASSERT_TRUE(cap_map_empty(map),
+				"MAP empty check after init");
+		int key_one = 1;
+		float value_one = 10.0f;
+		cap_map_insert(map, &key_one, &value_one);
+		int key_two = 2;
+		float value_two = 20.0f;
+		cap_map_insert(map, &key_two, &value_two);
+		int key_three = 3;
+		float value_three = 30.0f;
+		cap_map_insert(map, &key_three, &value_three);
+		int key_four = 4;
+		float value_four = 40.0f;
+		cap_map_insert(map, &key_four, &value_four);
+		int key_five = 5;
+		float value_five = 50.0f;
+		cap_map_insert(map, &key_five, &value_five);
+		int key_six = 6;
+		float value_six = 60.0f;
+		cap_map_insert(map, &key_six, &value_six);
+
+		cap_map_iterator *map_iterator =
+		    cap_map_iterator_init(map);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_one,
+				"MAP Iterator init check");
+		cap_map_iterator_increment(map_iterator);
+		CAP_ASSERT_TRUE(*(int *)map_iterator->key == key_two,
+				"MAP Iterator incr");
+		CAP_ASSERT_TRUE(*(int *)cap_map_iterator_next(
+				    map_iterator) == key_three &&
+				    *(int *)map_iterator->key == key_two,
+				"MAP Iterator next");
+		CAP_ASSERT_TRUE(cap_map_iterator_equals_predicate(
+				    map_iterator, predicate_fn_one),
+				"MAP Iterator true predicate");
+		CAP_ASSERT_FALSE(cap_map_iterator_equals_predicate(
+				     map_iterator, predicate_fn_two),
+				 "MAP Iterator false predicate");
+		cap_map_iterator_increment(map_iterator); 
+		cap_map_iterator *tmp_iter =
+		    cap_map_iterator_init(map);
+		cap_map_iterator_increment(tmp_iter);
+		CAP_ASSERT_EQ(*(int *)tmp_iter->key, key_two,
+			      "MAP increment after init");
+		cap_map_iterator_free(tmp_iter);
+		cap_map_iterator *tmp_begin_iter = cap_map_begin(map);
+		cap_map_iterator_free(tmp_begin_iter);
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_three,
+			      "MAP Iterator before remove");
+		cap_map_remove(map,&key_three); // remove key_three, currently key_four
+		cap_map_iterator_increment(map_iterator);
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_four,
+			      "MAP Iterator after removing only element");
+		CAP_ASSERT_EQ(*(int *)cap_map_iterator_next(map_iterator),
+			      key_five, "MAP Iterator next after remove");
+		cap_map_iterator_increment(map_iterator); // key_five
+		CAP_ASSERT_EQ(*(int *)map_iterator->key, key_five,
+			      "MAP Iterator remove check");
+		int key_seven = 7;
+		float value_seven = 70.0f;
+		size_t _tmp_current_index = map_iterator->_current_index;
+		cap_map_insert(map, &key_seven, &value_seven);
+		CAP_ASSERT_TRUE(map_iterator->_current_index ==
+					_tmp_current_index,
+				"MAP Iterator insert");
 		cap_map_free(map);
+		cap_map_iterator_free(map_iterator);
 	}
 }
