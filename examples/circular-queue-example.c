@@ -1,4 +1,4 @@
-#include "../cap-containers/circular_queue.h"
+#include "circular_queue.h"
 
 int main(int argc, const char *argv[]) {
 	// Please Take a look at 'cap-containers/dynamic_queue.h' source file for all interface

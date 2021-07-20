@@ -1,4 +1,4 @@
-#include "../cap-containers/list.h"
+#include "list.h"
 
 typedef struct {
 	int one;
