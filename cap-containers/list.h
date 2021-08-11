@@ -76,7 +76,7 @@ static void *cap_list_find_if(const cap_list *list,
  *
  * @param list cap_list container
  * @param item Element to push at the front of the list
- * @return True if the operation is success, False if memory failur
+ * @return True if the operation is success, False if memory failure
  */
 static bool cap_list_push_front(cap_list *list, void *item);
 /**
@@ -84,7 +84,7 @@ static bool cap_list_push_front(cap_list *list, void *item);
  *
  * @param list cap_list container
  * @param item Element to push at the end of the list
- * @return True if the operation is success, False if memory failur
+ * @return True if the operation is success, False if memory failure
  */
 static bool cap_list_push_back(cap_list *list, void *item);
 /**
@@ -165,12 +165,12 @@ static cap_list *cap_list_init() {
 	_cap_list_node *head_and_tail_nodes =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 2);
 	if (!head_and_tail_nodes) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	cap_list *d_list = (cap_list *)CAP_ALLOCATOR(cap_list, 1);
 	if (!d_list) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(head_and_tail_nodes);
 		return NULL;
 	}
@@ -190,7 +190,7 @@ static bool cap_list_push_front(cap_list *d_list, void *data) {
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
 	if (!new_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
@@ -207,7 +207,7 @@ static bool cap_list_push_back(cap_list *d_list, void *data) {
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
 	if (!new_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;
@@ -315,7 +315,7 @@ static bool cap_list_insert_after(cap_list *d_list,
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
 	if (!new_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;

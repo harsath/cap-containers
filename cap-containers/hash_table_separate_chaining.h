@@ -120,7 +120,7 @@ static bool cap_hash_table_erase(cap_hash_table *table, void *key);
  * gets hash into and removed(and freed) the element successfully, if not
  * returns False
  */
-static bool cap_hash_table_deep_erase(cap_hash_table *, void *key);
+static bool cap_hash_table_deep_erase(cap_hash_table *table, void *key);
 /**
  * Query if the element is empty
  *
@@ -128,7 +128,7 @@ static bool cap_hash_table_deep_erase(cap_hash_table *, void *key);
  * @return Returns True if the cap_hash_table container is empty, or else
  * returns False
  */
-static bool cap_hash_table_empty(cap_hash_table *);
+static bool cap_hash_table_empty(cap_hash_table *table);
 /**
  * Swap two cap_hash_table container object's internal members
  *
@@ -343,7 +343,7 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 	cap_hash_table *hash_table =
 	    (cap_hash_table *)CAP_ALLOCATOR(cap_hash_table, 1);
 	if (!hash_table) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	hash_table->capacity = init_capacity;
@@ -353,7 +353,7 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 	hash_table->_hash_buckets =
 	    (_cap_ll_chain *)CAP_ALLOCATOR(_cap_ll_chain, init_capacity);
 	if (!hash_table->_hash_buckets) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(hash_table);
 		return NULL;
 	}
@@ -369,7 +369,7 @@ static _cap_ll_chain *_cap_ll_chain_init() {
 	_cap_ll_chain *f_list =
 	    (_cap_ll_chain *)CAP_ALLOCATOR(_cap_ll_chain, 1);
 	if (!f_list) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	f_list->_head_node = NULL;
@@ -384,14 +384,14 @@ static bool _cap_ll_chain_push_front(_cap_ll_chain *f_list, void *key,
 	_cap_hash_node *hash_node =
 	    (_cap_hash_node *)CAP_ALLOCATOR(_cap_hash_node, 1);
 	if (!hash_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	hash_node->data = (CAP_GENERIC_TYPE_PTR)data;
 	hash_node->key =
 	    (CAP_GENERIC_TYPE_PTR)CAP_ALLOCATOR(CAP_GENERIC_TYPE, key_size);
 	if (!hash_node->key) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(hash_node);
 		return false;
 	}

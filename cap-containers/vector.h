@@ -438,7 +438,7 @@ static cap_vector *cap_vector_deep_copy(cap_vector *vector) {
 	cap_vector *deep_copy_vector =
 	    (cap_vector *)CAP_ALLOCATOR(cap_vector, 1);
 	if (!deep_copy_vector) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	deep_copy_vector->_capacity = vector->_capacity;
@@ -534,7 +534,7 @@ static bool cap_vector_shrink_to_fit(cap_vector *vector) {
 	    vector->_internal_buffer,
 	    sizeof(CAP_GENERIC_TYPE_PTR) * vector->_size);
 	if (!tmp_ptr) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	vector->_internal_buffer = tmp_ptr;

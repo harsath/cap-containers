@@ -141,7 +141,7 @@ static cap_forward_list *cap_forward_list_init() {
 	cap_forward_list *f_list =
 	    (cap_forward_list *)CAP_ALLOCATOR(cap_forward_list, 1);
 	if (!f_list) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	f_list->head = NULL;
@@ -154,7 +154,7 @@ static bool cap_forward_list_push_front(cap_forward_list *f_list, void *data) {
 	_cap_flist_node *current_node = f_list->head;
 	f_list->head = (_cap_flist_node *)CAP_ALLOCATOR(_cap_flist_node, 1);
 	if (!f_list->head) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	f_list->head->data = (CAP_GENERIC_TYPE_PTR)data;

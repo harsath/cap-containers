@@ -107,12 +107,12 @@ static void *_cap_vector_back(_cap_vector *);
 static cap_stack *cap_stack_init() {
 	cap_stack *stack = (cap_stack *)CAP_ALLOCATOR(cap_stack, 1);
 	if (!stack) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	stack->_internal_container = _cap_vector_init(CAP_STACK_INITIAL_SIZE);
 	if (!stack->_internal_container) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(stack);
 		return NULL;
 	}
@@ -156,13 +156,13 @@ static _cap_vector *_cap_vector_init(size_t initial_size) {
 	assert(initial_size > 0);
 	_cap_vector *vector = (_cap_vector *)CAP_ALLOCATOR(_cap_vector, 1);
 	if (!vector) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	vector->_internal_buffer = (CAP_GENERIC_TYPE_PTR *)CAP_ALLOCATOR(
 	    CAP_GENERIC_TYPE_PTR, initial_size);
 	if (!vector->_internal_buffer) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(vector);
 		return NULL;
 	}
@@ -176,7 +176,7 @@ static bool _cap_vector_reserve(_cap_vector *vector, size_t new_size) {
 	CAP_GENERIC_TYPE_PTR *tmp_ptr = (CAP_GENERIC_TYPE_PTR *)realloc(
 	    vector->_internal_buffer, sizeof(CAP_GENERIC_TYPE_PTR) * new_size);
 	if (!tmp_ptr) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	vector->_internal_buffer = tmp_ptr;

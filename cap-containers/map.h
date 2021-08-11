@@ -221,7 +221,7 @@ static cap_map *cap_map_init(size_t key_size,
 	if (!_cap_map_is_seeded) srand(time(NULL));
 	cap_map *map = (cap_map *)CAP_ALLOCATOR(cap_map, 1);
 	if (!map) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	map->_compare_fn = compare_fn;
@@ -257,7 +257,7 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 	}
 	cap_map *new_node = (cap_map *)CAP_ALLOCATOR(cap_map, 1);
 	if (!new_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return -1;
 	}
 	new_node->_value = value;
@@ -265,7 +265,7 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 	    (unsigned char *)CAP_ALLOCATOR(unsigned char, map->_key_size);
 	if (!new_node->_key) {
 		free(new_node);
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return -1;
 	}
 	memcpy(new_node->_key, key, map->_key_size);

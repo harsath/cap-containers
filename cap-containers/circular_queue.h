@@ -98,14 +98,14 @@ static cap_circular_queue *cap_circular_queue_init(size_t capacity_of_queue) {
 	cap_circular_queue *cqueue =
 	    (cap_circular_queue *)CAP_ALLOCATOR(cap_circular_queue, 1);
 	if (!cqueue) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	cqueue->_capacity = capacity_of_queue;
 	cqueue->_internal_buffer = (CAP_GENERIC_TYPE_PTR *)CAP_ALLOCATOR(
 	    CAP_GENERIC_TYPE_PTR, capacity_of_queue);
 	if (!cqueue->_internal_buffer) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(cqueue);
 		return NULL;
 	}
