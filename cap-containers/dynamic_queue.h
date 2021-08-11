@@ -136,12 +136,12 @@ static cap_dynamic_queue *cap_dynamic_queue_init() {
 	cap_dynamic_queue *dynamic_queue =
 	    (cap_dynamic_queue *)CAP_ALLOCATOR(cap_dynamic_queue, 1);
 	if (!dynamic_queue) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	dynamic_queue->_internal_list = _cap_list_init();
 	if (!dynamic_queue->_internal_list) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(dynamic_queue);
 		return NULL;
 	}
@@ -209,12 +209,12 @@ static _cap_list *_cap_list_init() {
 	_cap_list_node *head_and_tail_nodes =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 2);
 	if (!head_and_tail_nodes) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	_cap_list *d_list = (_cap_list *)CAP_ALLOCATOR(_cap_list, 1);
 	if (!d_list) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(head_and_tail_nodes);
 		return NULL;
 	}
@@ -234,7 +234,7 @@ static bool _cap_list_push_front(_cap_list *d_list, void *data) {
 	_cap_list_node *new_node =
 	    (_cap_list_node *)CAP_ALLOCATOR(_cap_list_node, 1);
 	if (!new_node) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return false;
 	}
 	new_node->data = (CAP_GENERIC_TYPE_PTR)data;

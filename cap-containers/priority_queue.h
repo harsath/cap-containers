@@ -127,7 +127,7 @@ cap_priority_queue_init(int (*compare_fn)(void *item_one, void *item_two)) {
 	cap_priority_queue *pqueue =
 	    (cap_priority_queue *)CAP_ALLOCATOR(cap_priority_queue, 1);
 	if (!pqueue) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		return NULL;
 	}
 	// Default capacity is 5, but it'll be increased in log(n) times.
@@ -135,7 +135,7 @@ cap_priority_queue_init(int (*compare_fn)(void *item_one, void *item_two)) {
 	pqueue->_internal_buffer = (CAP_GENERIC_TYPE_PTR *)CAP_ALLOCATOR(
 	    CAP_GENERIC_TYPE_PTR, default_size);
 	if (!pqueue->_internal_buffer) {
-		fprintf(stderr, "memory allocation failur\n");
+		fprintf(stderr, "memory allocation failure\n");
 		free(pqueue);
 		return NULL;
 	}
