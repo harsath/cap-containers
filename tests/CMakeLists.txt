@@ -20,6 +20,7 @@ set(
 	test-circular-queue.c
 	test-arena-allocator.c
 	test-priority-queue.c
+	test-hash-table-linear-probing.c
 )
 add_executable(
 	${PROJECT_NAME}

@@ -10,6 +10,7 @@ extern void test_map(void);
 extern void test_circular_queue(void);
 extern void test_arena_allocator(void);
 extern void test_priority_queue(void);
+extern void test_hash_table_linear_probing(void);
 
 int main(int argc, const char *const argv[]) {
 	test_dynamic_queue();
@@ -23,6 +24,7 @@ int main(int argc, const char *const argv[]) {
 	test_circular_queue();
 	test_arena_allocator();
 	test_priority_queue();
+	test_hash_table_linear_probing();
 
 	return 0;
 }
