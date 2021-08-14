@@ -48,18 +48,90 @@ typedef struct {
 	_cap_hash_node *_hash_buckets;
 } cap_lp_hash_table;
 
+/**
+ * Initilize a cap_lp_hash_table container
+ *
+ * @param key_size Key-size that'd be used for the container, needed for
+ * hash-function
+ * @param compare_fn Compare function pointer that'd be called as a callback for
+ * comparing two keys. The signacture of the callback is, it take two void* and
+ * returns a boolean type, true if both keys matches and false otherwise.
+ * @param hash_fn Hash function to be used within the implementation. Pass NULL
+ * if you'd like to use the default hash function.
+ * @return Newly allocated cap_lp_hash_table container.
+ */
 static cap_lp_hash_table *cap_lp_hash_table_init(size_t key_size,
 						 _compare_fn_type compare_fn,
 						 _hash_fn_type hash_fn);
+/**
+ * Check if a key contains within the cap_lp_hash_table container
+ *
+ * @param table cap_lp_hash_table container.
+ * @param key The key to check.
+ * @return True if the key contained within the container, false otherwise.
+ */
 static bool cap_lp_hash_table_contains(cap_lp_hash_table *table, void *key);
+/**
+ * Inserts a key and value pair onto the container. The key or value shouldn't
+ * be NULL.
+ *
+ * @param table cap_lp_hash_table container.
+ * @param The key to insert into the container.
+ * @param The value to insert into the container.
+ */
 static void cap_lp_hash_table_insert(cap_lp_hash_table *table, void *key,
 				     void *value);
+/**
+ * Lookup a value for a particular key in the container.
+ *
+ * @param table cap_lp_hash_table container.
+ * @param key The key to look for within the container.
+ * @return NULL if the key isn't found, or pointer to the value if it's found.
+ */
 static void *cap_lp_hash_table_lookup(cap_lp_hash_table *table, void *key);
+/**
+ * Remove a key and value pair from the container.
+ *
+ * @param table cap_lp_hash_table container.
+ * @param key The key to erase.
+ * @param True if the key exists and it has been erased, false otherwise.
+ */
 static bool cap_lp_hash_table_erase(cap_lp_hash_table *table, void *key);
+/**
+ * Remove the key and value pair from the container and free() the key and value
+ * pair, assuming the key is dynamically allocated.
+ *
+ * @param table cap_lp_hash_table container.
+ * @param key The key to deep erase.
+ * @return True if the key exists and it has been erased, false otherwise.
+ */
 static bool cap_lp_hash_table_deep_erase(cap_lp_hash_table *table, void *key);
+/**
+ * Check if the container is empty.
+ *
+ * @param table cap_lp_hash_table container.
+ * @return True if it's empty, false otherwise.
+ */
 static bool cap_lp_hash_table_empty(cap_lp_hash_table *table);
+/**
+ * Query the size of the cap_lp_hash_table container.
+ *
+ * @param table cap_lp_hash_table container.
+ * @return Size of the underlying container.
+ */
 static size_t cap_lp_hash_table_size(cap_lp_hash_table *table);
+/**
+ * Free the cap_lp_hash_table container
+ *
+ * @param table cap_lp_hash_table container.
+ */
 static void cap_lp_hash_table_free(cap_lp_hash_table *table);
+/**
+ * Deep free the container's elements. This operation will calls free() on the
+ * container's key and values
+ *
+ * @param table cap_lp_hash_table container.
+ */
 static void cap_lp_hash_table_deep_free(cap_lp_hash_table *table);
 static size_t _hash_fn_defaut_hash_lp(uint8_t *key, size_t key_size);
 static void _cap_lp_hash_table_rehash(cap_lp_hash_table *table);
