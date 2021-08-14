@@ -7,8 +7,8 @@ bool compare_fn_one(void *one, void *two) {
 
 void test_hash_table_linear_probing(void) {
 	{ // Key-type: int; value type: ANY;
-		cap_lp_hash_table *table = cap_lp_hash_table_init(
-		    sizeof(int), compare_fn_one, NULL);
+		cap_lp_hash_table *table =
+		    cap_lp_hash_table_init(sizeof(int), compare_fn_one, NULL);
 		CAP_ASSERT_EQ(table->size, 0,
 			      "HASHTABLE_LP size after first init");
 		int key_one = 10;
@@ -32,7 +32,7 @@ void test_hash_table_linear_probing(void) {
 		cap_lp_hash_table_insert(table, &key_two, &value_two);
 		cap_lp_hash_table_insert(table, &key_three, &value_three);
 		CAP_ASSERT_TRUE(
-			cap_lp_hash_table_contains(table, &key_two) &&
+		    cap_lp_hash_table_contains(table, &key_two) &&
 			cap_lp_hash_table_contains(table, &key_one) &&
 			*(float *)cap_lp_hash_table_lookup(table, &key_two) ==
 			    value_two &&
@@ -49,6 +49,11 @@ void test_hash_table_linear_probing(void) {
 		float value_seven = 70.70f;
 		cap_lp_hash_table_insert(table, &key_six, &value_six);
 		cap_lp_hash_table_insert(table, &key_seven, &value_seven);
+		CAP_ASSERT_TRUE(
+		    cap_lp_hash_table_erase(table, &key_four) &&
+			!cap_lp_hash_table_erase(table, &key_four) &&
+			cap_lp_hash_table_size(table) == 6,
+		    "HASHTABLE_LP erase key and re-erase check");
 		cap_lp_hash_table_free(table);
 	}
 }
