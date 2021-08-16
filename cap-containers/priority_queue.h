@@ -226,8 +226,10 @@ static int cap_priority_queue_size(cap_priority_queue *pqueue) {
 }
 
 static void cap_priority_queue_free(cap_priority_queue *pqueue) {
-	free(pqueue->_internal_buffer);
-	// free(pqueue);
+	if (pqueue) {
+		free(pqueue->_internal_buffer);
+		free(pqueue);
+	}
 }
 
 static void cap_priority_queue_clear(cap_priority_queue *pqueue) {
