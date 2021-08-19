@@ -29,7 +29,6 @@
 #include <string.h>
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_DEFAULT_HASHTABLE_MAX_LOAD_FACTOR 0.80
-#define CAP_HASHTABLE_SC_INIT_SIZE 10
 #define CAP_HASHTABLE_LOAD_FACTOR(hash_table_ptr)                              \
 	(hash_table_ptr->size == hash_table_ptr->capacity)
 #define CAP_GENERIC_TYPE unsigned char

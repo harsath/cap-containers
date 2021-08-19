@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include "hash_table_separate_chaining.h"
 
+bool compare_function_int(void *key_one, void *key_two) {
+	return (((int*)key_one) > ((int*)key_two));
+}
+
 int main(int argc, const char *argv[]) {
 	// Please Take a look at 'cap-containers/hash_table_separate_chaining.h' source file for all interface	
 	
-	//						 Key-Size,  Initial bucket size/capacity
-	cap_hash_table *hash_table = cap_hash_table_init(sizeof(int), 5);
+	// Refer to the documentation for the arguments
+	cap_hash_table *hash_table = cap_hash_table_init(sizeof(int), 5, compare_function_int, NULL);
 	int key_one = 12, key_two = 23, key_three = 34, key_four = 45, key_five = 56, key_six = 67;
 	float val_one = 10.0f, val_two = 20.2f, val_three = 30.3, val_four = 40.4f, val_five = 50.5, val_six = 60.6f;
 
