@@ -208,7 +208,6 @@ _cap_hash_table_rehash(cap_hash_table *hash_table_original) {
 					      current_node->data);
 			prev_node = current_node;
 			current_node = current_node->next;
-			free(prev_node->key);
 			free(prev_node);
 		}
 	}
@@ -388,14 +387,7 @@ static bool _cap_ll_chain_push_front(_cap_ll_chain *f_list, void *key,
 		return false;
 	}
 	hash_node->data = (CAP_GENERIC_TYPE_PTR)data;
-	hash_node->key =
-	    (CAP_GENERIC_TYPE_PTR)CAP_ALLOCATOR(CAP_GENERIC_TYPE, key_size);
-	if (!hash_node->key) {
-		fprintf(stderr, "memory allocation failure\n");
-		free(hash_node);
-		return false;
-	}
-	memcpy(hash_node->key, key, key_size);
+	hash_node->key = (CAP_GENERIC_TYPE_PTR)key;
 	hash_node->next = current_head;
 	f_list->_head_node = hash_node;
 	return true;
@@ -425,23 +417,29 @@ static bool _cap_ll_chain_remove_if(_cap_ll_chain *f_list, void *key,
 			if (prev_node == NULL && current_node->next == NULL) {
 				f_list->_head_node = NULL;
 				f_list->_num_items = 0;
-				if (deep_free) free(current_node->data);
-				free(current_node->key);
+				if (deep_free) {
+					free(current_node->data);
+					free(current_node->key);
+				}
 				free(current_node);
 				return true;
 			} else if (prev_node == NULL &&
 				   current_node->next != NULL) {
 				f_list->_head_node = current_node->next;
 				f_list->_num_items--;
-				if (deep_free) free(current_node->data);
-				free(current_node->key);
+				if (deep_free) {
+					free(current_node->data);
+					free(current_node->key);
+				}
 				free(current_node);
 				return true;
 			} else {
 				prev_node->next = current_node->next;
 				f_list->_num_items--;
-				if (deep_free) free(current_node->data);
-				free(current_node->key);
+				if (deep_free) {
+					free(current_node->data);
+					free(current_node->key);
+				}
 				free(current_node);
 				return true;
 			}
@@ -463,7 +461,6 @@ static void _cap_ll_chain_free(_cap_ll_chain *f_list) {
 	_cap_hash_node *current_node = f_list->_head_node;
 	while (current_node != NULL) {
 		_cap_hash_node *next_node = current_node->next;
-		free(current_node->key);
 		free(current_node);
 		current_node = next_node;
 	}
