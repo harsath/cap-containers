@@ -322,7 +322,7 @@ static bool cap_hash_table_contains(cap_hash_table *hash_table, void *key) {
 }
 
 static void cap_hash_table_free(cap_hash_table *hash_table) {
-	for (size_t i = 0; i < hash_table->size; i++) {
+	for (size_t i = 1; i < hash_table->size; i++) {
 		_cap_ll_chain_free(&hash_table->_hash_buckets[i]);
 	}
 	free(hash_table->_hash_buckets);
@@ -330,7 +330,7 @@ static void cap_hash_table_free(cap_hash_table *hash_table) {
 }
 
 static void cap_hash_table_deep_free(cap_hash_table *hash_table) {
-	for (size_t i = 0; i < hash_table->size; i++) {
+	for (size_t i = 1; i < hash_table->size; i++) {
 		_cap_ll_chain_deep_free(&hash_table->_hash_buckets[i]);
 	}
 	free(hash_table->_hash_buckets);
