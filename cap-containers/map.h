@@ -168,7 +168,7 @@ static cap_map_iterator *cap_map_iterator_init(cap_map *map);
  * @return Returns True, if predicate_fn says so, if not returns False.
  */
 static bool cap_map_iterator_equals_predicate(cap_map_iterator *iterator,
-						 bool (*predicate_fn)(void *));
+					      bool (*predicate_fn)(void *));
 /**
  * Increment the Iterator to the next element on the container
  *
@@ -261,14 +261,7 @@ static int cap_map_insert(cap_map *map, void *key, void *value) {
 		return -1;
 	}
 	new_node->_value = value;
-	new_node->_key =
-	    (unsigned char *)CAP_ALLOCATOR(unsigned char, map->_key_size);
-	if (!new_node->_key) {
-		free(new_node);
-		fprintf(stderr, "memory allocation failure\n");
-		return -1;
-	}
-	memcpy(new_node->_key, key, map->_key_size);
+	new_node->_key = (CAP_GENERIC_TYPE_PTR)key;
 	new_node->_height = _cap_map_get_rand_level(map->_height);
 	new_node->_key_size = map->_key_size;
 	++map->_size;
@@ -400,16 +393,13 @@ static int _cap_map_get_rand_level(int max_number) {
 }
 
 static void _cap_map_free_node(cap_map *map) {
-	if (map) {
-		free(map->_key);
-		free(map);
-	}
+	if (map) { free(map); }
 }
 
 static void _cap_map_deep_free_node(cap_map *map) {
 	if (map) {
-		if (map->_key) free(map->_key);
-		if (map->_value) free(map->_value);
+		free(map->_key);
+		free(map->_value);
 		free(map);
 	}
 }
@@ -449,7 +439,7 @@ static void cap_map_iterator_increment(cap_map_iterator *iterator) {
 	iterator->value = iterator->_current_element->_value;
 	++iterator->_current_index;
 }
- 
+
 static void *cap_map_iterator_next(cap_map_iterator *iterator) {
 	assert(iterator != NULL);
 	if (iterator->_original_reference->_size ==
