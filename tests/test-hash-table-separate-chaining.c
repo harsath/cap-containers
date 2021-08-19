@@ -4,10 +4,18 @@
 	char variable_name[10];                                                \
 	strncpy(variable_name, value, strlen(value))
 
+static bool compare_fn_int(void *key_one, void *key_two) {
+	assert(key_one != NULL && key_two != NULL);
+	return (memcmp(key_one, key_two, sizeof(int)) == 0);
+}
+static bool compare_fn_char(void *key_one, void *key_two) {
+	assert(key_one != NULL && key_two != NULL);
+	return (memcmp(key_one, key_two, sizeof(char)) == 0);
+}
 void test_hash_table_separate_chain(void) {
 	{ // Key-type: int; value type: ANY;
 		cap_hash_table *hash_table =
-		    cap_hash_table_init(sizeof(int), 5);
+		    cap_hash_table_init(sizeof(int), 5, compare_fn_int, NULL);
 		CAP_ASSERT_TRUE(cap_hash_table_empty(hash_table),
 				"HASHTABLE_SP empty after init");
 		CAP_ASSERT_TRUE(cap_hash_table_size(hash_table) == 0,
@@ -111,7 +119,7 @@ void test_hash_table_separate_chain(void) {
 		size_t key_size = 10;
 		size_t initial_capacity = 3;
 		cap_hash_table *hash_table_http_headers =
-		    cap_hash_table_init(key_size, initial_capacity);
+		    cap_hash_table_init(key_size, initial_capacity, compare_fn_char, NULL);
 		cap_hash_table_insert(hash_table_http_headers, key_one,
 				      value_one);
 		cap_hash_table_insert(hash_table_http_headers, key_two,
@@ -175,7 +183,7 @@ void test_hash_table_separate_chain(void) {
 		char *value_two = calloc(1, 10);
 		strncpy(value_two, "value_two", strlen("value_two"));
 		cap_hash_table *hash_table_heap_alloc =
-		    cap_hash_table_init(sizeof(int), 10);
+		    cap_hash_table_init(sizeof(int), 10, compare_fn_int, NULL);
 		cap_hash_table_insert(hash_table_heap_alloc, key_one,
 				      value_one);
 		cap_hash_table_insert(hash_table_heap_alloc, key_two,
