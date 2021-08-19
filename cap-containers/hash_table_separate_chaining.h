@@ -29,12 +29,16 @@
 #include <string.h>
 #ifndef DOXYGEN_SHOULD_SKIP_THIS
 #define CAP_DEFAULT_HASHTABLE_MAX_LOAD_FACTOR 0.80
+#define CAP_HASHTABLE_SC_INIT_SIZE 10
 #define CAP_HASHTABLE_LOAD_FACTOR(hash_table_ptr)                              \
 	(hash_table_ptr->size == hash_table_ptr->capacity)
 #define CAP_GENERIC_TYPE unsigned char
 #define CAP_GENERIC_TYPE_PTR CAP_GENERIC_TYPE *
 #define CAP_ALLOCATOR(type, number_of_elements)                                \
 	calloc(number_of_elements, sizeof(type))
+
+typedef bool (*_compare_fn_type)(void *key_one, void *key_two);
+typedef size_t (*_hash_fn_type)(uint8_t *key, size_t key_size);
 
 typedef struct _cap_hash_node {
 	CAP_GENERIC_TYPE_PTR data;
@@ -51,8 +55,8 @@ typedef struct {
 	size_t size;
 	size_t capacity;
 	size_t key_size;
-	bool (*compare_fn)(void *key_one, void *key_two, size_t key_size);
-	size_t (*hash_fn)(uint8_t *key, size_t key_size);
+	_compare_fn_type compare_fn;
+	_hash_fn_type hash_fn;
 	_cap_ll_chain *_hash_buckets;
 } cap_hash_table;
 #endif
@@ -63,11 +67,19 @@ typedef struct {
  * key-key
  *
  * @param key_size Key-size for the cap_hash_table container
- * @param init_capacity Initial bucket capacity for the cap_hash_table container
+ * @param init_capacity Initial capacity of the hash-table's buckets.
+ * @param compare_fn Function pointer for comparing two keys, it should take two
+ * void* and return a bool. Returns true if two keys are same and false
+ * otherwise.
+ * @param hash_fn Function pointer for hash-function internally used by the
+ * container. Pass NULL if you wish to use the default hash-function provided by
+ * the container.
  * @return Allocated cap_hash_table container
  */
 static cap_hash_table *cap_hash_table_init(size_t key_size,
-					   size_t init_capacity);
+					   size_t init_capacity,
+					   _compare_fn_type compare_fn,
+					   _hash_fn_type hash_fn);
 
 // Lookup & Update:
 /**
@@ -172,8 +184,6 @@ static void cap_hash_table_deep_free(cap_hash_table *table);
 // Prototypes(Internal helpers)
 // Hash table:
 static cap_hash_table *_cap_hash_table_rehash(cap_hash_table *);
-static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
-					    size_t key_size);
 static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size);
 
 // Linked list chain:
@@ -198,7 +208,8 @@ static cap_hash_table *
 _cap_hash_table_rehash(cap_hash_table *hash_table_original) {
 	assert(hash_table_original != NULL);
 	cap_hash_table *new_hash_table = cap_hash_table_init(
-	    hash_table_original->key_size, hash_table_original->capacity * 2);
+	    hash_table_original->key_size, hash_table_original->capacity * 2,
+	    hash_table_original->compare_fn, hash_table_original->hash_fn);
 	for (size_t i = 0; i < hash_table_original->size; i++) {
 		_cap_hash_node *current_node =
 		    hash_table_original->_hash_buckets[i]._head_node;
@@ -226,9 +237,8 @@ static void cap_hash_table_swap(cap_hash_table *hash_table_one,
 	size_t temp_one_size = hash_table_one->size;
 	size_t temp_one_key_size = hash_table_one->key_size;
 	size_t temp_one_capacity = hash_table_one->capacity;
-	size_t (*temp_one_hash_fn)(uint8_t *, size_t) = hash_table_one->hash_fn;
-	bool (*temp_one_cmp_fn)(void *, void *, size_t) =
-	    hash_table_one->compare_fn;
+	_hash_fn_type temp_one_hash_fn = hash_table_one->hash_fn;
+	_compare_fn_type temp_one_cmp_fn = hash_table_one->compare_fn;
 	hash_table_one->_hash_buckets = hash_table_two->_hash_buckets;
 	hash_table_one->compare_fn = hash_table_two->compare_fn;
 	hash_table_one->hash_fn = hash_table_two->hash_fn;
@@ -338,7 +348,9 @@ static void cap_hash_table_deep_free(cap_hash_table *hash_table) {
 }
 
 static cap_hash_table *cap_hash_table_init(size_t key_size,
-					   size_t init_capacity) {
+					   size_t init_capacity,
+					   _compare_fn_type compare_fn,
+					   _hash_fn_type hash_fn) {
 	cap_hash_table *hash_table =
 	    (cap_hash_table *)CAP_ALLOCATOR(cap_hash_table, 1);
 	if (!hash_table) {
@@ -348,7 +360,7 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 	hash_table->capacity = init_capacity;
 	hash_table->key_size = key_size;
 	hash_table->size = 0;
-	hash_table->compare_fn = _cap_hash_table_default_compare;
+	hash_table->compare_fn = compare_fn;
 	hash_table->_hash_buckets =
 	    (_cap_ll_chain *)CAP_ALLOCATOR(_cap_ll_chain, init_capacity);
 	if (!hash_table->_hash_buckets) {
@@ -356,7 +368,10 @@ static cap_hash_table *cap_hash_table_init(size_t key_size,
 		free(hash_table);
 		return NULL;
 	}
-	hash_table->hash_fn = _hash_fn_default_hash;
+	if (!hash_fn)
+		hash_table->hash_fn = _hash_fn_default_hash;
+	else
+		hash_table->hash_fn = hash_fn;
 	for (size_t i = 0; i < init_capacity; i++) {
 		hash_table->_hash_buckets[i]._head_node = NULL;
 		hash_table->_hash_buckets[i]._num_items = 0;
@@ -478,11 +493,6 @@ static void _cap_ll_chain_deep_free(_cap_ll_chain *f_list) {
 	}
 }
 
-static bool _cap_hash_table_default_compare(void *key_one, void *key_two,
-					    size_t key_size) {
-	assert(key_one != NULL && key_two != NULL);
-	return (memcmp(key_one, key_two, key_size) == 0);
-}
 
 static size_t _hash_fn_default_hash(uint8_t *key, size_t key_size) {
 	// Hash type: djb2
